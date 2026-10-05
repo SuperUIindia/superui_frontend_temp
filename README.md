@@ -67,23 +67,57 @@ npm run dev              # http://localhost:5173
 
 ## Configuration
 
-Every runtime value comes from a `VITE_*` variable. Nothing hard-codes a host,
-port or URL — see `src/lib/env.js`, which is the only module that touches
-`import.meta.env` and which throws at start-up if a required value is missing.
+Every runtime value comes from a `VITE_*` variable or a fallback defined in one
+place — `src/lib/env.js` is the only module that touches `import.meta.env`.
 
-| Variable | Purpose |
+**No variable is required for the app to run.** `.env` is git-ignored, so a fresh
+clone or a CI build has no env file at all. The fallbacks are chosen so a
+missing value degrades rather than breaks:
+
+| Missing value | Falls back to |
 | --- | --- |
-| `VITE_PORT` | Dev/preview server port. |
-| `VITE_DEV_HOST` | Interface the dev server binds to. Keep `localhost`; `0.0.0.0` exposes the source and the `/api` proxy to the whole network. |
-| `VITE_SITE_URL` | Public origin. Drives canonical URLs, Open Graph and all structured data. |
-| `VITE_PROXY_TARGET` | Origin the **dev server** proxies `/api` to. |
-| `VITE_API_BASE_URL` | API origin the **running app** uses. Leave blank locally (the proxy handles it); set the deployed API origin in production. |
-| `VITE_SITE_NAME` / `VITE_SITE_ALT_NAME` | Brand name and alternate name. |
-| `VITE_LOGO_PATH` | Logo path served from `public/`. |
-| `VITE_DEFAULT_TITLE` / `VITE_DEFAULT_DESCRIPTION` / `VITE_SITE_KEYWORDS` | SEO floor for crawlers that never run JavaScript. |
-| `VITE_CONTACT_*` / `VITE_BUSINESS_*` / `VITE_AREAS_SERVED` | Business coordinates used for local-SEO structured data. |
-| `VITE_INSTAGRAM_URL` / `VITE_FACEBOOK_URL` / `VITE_LINKEDIN_URL` | Social profile links. A blank value hides that footer icon. |
-| `VITE_GSC_VERIFICATION` | Google Search Console token, injected at runtime by `src/lib/seo.js`. |
+| `VITE_SITE_URL` | the origin the page was served from (`window.location.origin`) — correct for a static SPA, and never a guessed host |
+| `VITE_DEFAULT_TITLE`, `VITE_DEFAULT_DESCRIPTION` | the byte-identical static values in `index.html` |
+| `VITE_SITE_NAME`, `VITE_LOGO_PATH`, `VITE_THEME_COLOR`, `VITE_SITE_LOCALE` | SuperUI brand defaults |
+| `VITE_BUSINESS_COUNTRY`, `VITE_BUSINESS_COUNTRY_NAME` | `IN` / `India` |
+| everything else | empty string, and the feature that needs it is skipped |
+
+`warnAboutMissingEnv()` (called once from `src/main.jsx`) reports anything the
+build lacked, so a misconfigured deployment is visible in the console instead of
+silent.
+
+### Setting variables on Vercel
+
+`.env` is never deployed. Add values under
+**Vercel → Project → Settings → Environment Variables** for Production,
+Preview and Development as needed. Set at least:
+
+| Variable | Why it matters |
+| --- | --- |
+| `VITE_SITE_URL` | Canonical URLs, Open Graph, JSON-LD `@id`s |
+| `VITE_DEFAULT_TITLE` / `VITE_DEFAULT_DESCRIPTION` | What crawlers and AI answer engines read |
+| `VITE_API_BASE_URL` | Only if the API is on a different origin than the frontend |
+| `VITE_BUSINESS_CITY` / `_REGION` / `_REGION_CODE` / `_POSTAL_CODE` / `_LATITUDE` / `_LONGITUDE` | GEO / local-SEO structured data |
+| `VITE_CONTACT_EMAIL` / `VITE_CONTACT_PHONE` | `ContactPoint` structured data |
+
+### Pointing `/api` at the backend
+
+With `VITE_API_BASE_URL` blank, requests go to same-origin `/api/...`. That works
+when Vercel routes `/api` to the backend — add a rewrite to `vercel.json` using
+your backend's deployment URL:
+
+```json
+"rewrites": [
+  { "source": "/api/:path*", "destination": "https://YOUR-BACKEND.example.com/api/:path*" },
+  { "source": "/((?!api/|assets/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }
+]
+```
+
+The `/api` rewrite must come **first**, and the SPA rewrite must keep excluding
+`api/` so API 404s are not answered with `index.html`.
+
+If the backend is on a different domain instead, set `VITE_API_BASE_URL` to that
+origin and add the frontend origin to the backend's `CORS_ORIGINS`.
 
 ### Security rules for `.env`
 
@@ -158,11 +192,31 @@ These are the invariants the code maintains. Please keep them when editing.
 `vercel.json` supplies the SPA rewrite and the security headers (CSP, HSTS,
 `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-*`).
 
+Two things to configure on the host:
+
+1. **Environment variables** — see [Setting variables on Vercel](#setting-variables-on-vercel).
+2. **`/api` routing** — see [Pointing `/api` at the backend](#pointing-api-at-the-backend). Until this
+   is set, the frontend loads but every API call 404s and the page falls back to
+   its built-in content.
+
+Set the host's Node version to 24 to match `.nvmrc`.
+
 On any other static host, `public/_redirects` provides the equivalent SPA
 fallback for Netlify. Replicate the `headers` block from `vercel.json` by hand —
 `index.html` alone does not set them.
 
-The build needs `VITE_SITE_URL`, `VITE_DEFAULT_TITLE` and
-`VITE_DEFAULT_DESCRIPTION` in the host's environment; `src/lib/env.js` throws
-without them rather than silently building a page with the wrong origin. Set the
-host's Node version to 24 to match `.nvmrc`.
+## Troubleshooting
+
+**Blank page, `MissingFrontendEnvError` or a blank `#root` in the console.**
+Fixed in the current revision — an older build threw when `VITE_SITE_URL` was
+absent, which is every Vercel build, because `.env` is not deployed. If you still
+see it, set `VITE_SITE_URL` on the host and redeploy.
+
+**`Loading a manifest from 'https://vercel.com/...' violates Content Security
+Policy`.** Vercel's dashboard probes the deployment's web manifest from its own
+origin. `manifest-src 'self' https://vercel.com` in `vercel.json` permits that
+probe; it does not weaken `script-src`, so no Vercel script can execute in your
+page.
+
+**API requests return the HTML page instead of JSON, or 404.** The `/api`
+rewrite is missing or ordered after the SPA rewrite — see above.

@@ -34,6 +34,17 @@ const REQUEST_TIMEOUT_MS = 20000;
 const API_PREFIX = '/api/';
 
 /**
+ * Resolves an endpoint against the API base.
+ *
+ * A blank VITE_API_BASE_URL means same-origin "/api/...", which is the correct
+ * target for a Vercel deployment that rewrites /api to the backend and for local
+ * development behind the Vite proxy.
+ */
+function resolveApiUrl(endpoint) {
+  return `${API_BASE}${endpoint}`;
+}
+
+/**
  * Rejects anything that is not a plain same-origin "/api/..." path.
  * Guards against open-redirect / SSRF-by-proxy through a DB-controlled path.
  */
@@ -50,7 +61,7 @@ function assertSafeEndpoint(endpoint) {
 
 export async function request(endpoint, options = {}) {
   const safeEndpoint = assertSafeEndpoint(endpoint);
-  const url = `${API_BASE}${safeEndpoint}`;
+  const url = resolveApiUrl(safeEndpoint);
 
   const method = (options.method || 'GET').toUpperCase();
   const hasBody = typeof options.body === 'string' && options.body.length > 0;

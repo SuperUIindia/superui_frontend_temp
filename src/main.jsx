@@ -2,10 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
-import { warnIfLoopbackInDev } from './lib/env';
+import { warnAboutMissingEnv } from './lib/env';
 import './styles/index.css';
 
-warnIfLoopbackInDev();
+warnAboutMissingEnv();
 
 const container = document.getElementById('root');
 
