@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
+import EnquiryForm from './pages/EnquiryForm';
 import ProtectedRoute from './components/ProtectedRoute';
 import { SiteContentProvider, useContent, useSiteContent } from './lib/siteContent';
 import { applySeoContent, applySeoGraph, applyVerificationTags } from './lib/seo';
@@ -43,6 +44,11 @@ export default function App() {
               <Routes>
                 {/* Public Landing Page */}
                 <Route path="/" element={<Home />} />
+
+                {/* Standalone enquiry form. Renders the same ContactForm the home
+                    page does and posts to the same endpoint, so both write to
+                    one leads collection. */}
+                <Route path="/enquiryform" element={<EnquiryForm />} />
 
                 {/* Admin Login */}
                 <Route path="/admin/login" element={<Login />} />
