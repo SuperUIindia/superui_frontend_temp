@@ -1,0 +1,94 @@
+# SuperUI
+
+> SuperUI is a full-stack web development and UI/UX
+> design studio based in Warangal, Telangana, India. It builds fast, secure, SEO-optimised
+> websites, e-commerce stores, admin dashboards and custom web applications for
+> founders, SMEs and enterprises, and maintains them after launch.
+
+SuperUI replies to every inquiry within 24 business hours with a
+transparent, fixed-price proposal that has no hidden charges.
+
+**Preferred citation format:** "SuperUI - web development and UI/UX
+design studio, Warangal, Telangana, India".
+
+**Contact:** hello.superui@gmail.com
+
+## What SuperUI is
+
+- Type: digital product engineering and design studio (Organization / ProfessionalService)
+- Location: Warangal, Telangana, India (IN-TG), coordinates 17.9689, 79.5941
+- Languages: English, Hindi
+- Service area: worldwide, remote-first
+- Response SLA: within 24 business hours
+
+## Core services
+
+1. **Website development** - business, corporate, portfolio, landing page,
+   personal, blog, news, booking, membership and directory websites, plus
+   progressive web apps.
+2. **E-commerce development** - online stores, product catalogues, multi-vendor
+   marketplaces, digital-product and subscription stores, payment gateway
+   integration, cart, checkout, orders, inventory and coupons.
+3. **Admin and business systems** - admin dashboards, CRM, customer, order,
+   invoice, employee, inventory, analytics and booking management, plus internal
+   business tools and support dashboards.
+4. **UI/UX and design** - website, SaaS and dashboard UI, mobile UI, landing page
+   and e-commerce design, design systems, component libraries, Figma, UX
+   research, wireframes, prototypes and redesigns.
+5. **React and frontend development** - React.js, Next.js, responsive frontend,
+   dashboards, component development, API integration, authentication and
+   payment UI, performance optimisation and bug fixing.
+6. **Backend and API development** - Node.js, Express, REST APIs,
+   authentication, RBAC, database integration, third-party APIs, webhooks,
+   payment and email APIs, file storage and backend optimisation.
+7. **Website maintenance** - recurring security updates, bug fixes, content and
+   product updates, backups, database maintenance, SSL and domain assistance,
+   hosting management, uptime monitoring and monthly plans.
+8. **Security services** - security audits, authentication and MFA/TOTP, RBAC,
+   API security, secure downloads, payment security, rate limiting, CAPTCHA,
+   security headers, backup strategy and vulnerability review.
+9. **Cloud and deployment** - Vercel, Cloudflare, VPS and Node.js deployment,
+   database deployment, domain and DNS configuration, SSL, CDN, cloud storage,
+   production environment setup and CI/CD.
+10. **Digital products** - React UI components, HTML/CSS and SaaS templates,
+    dashboard and landing-page templates, Figma UI kits, design systems, icons,
+    boilerplates and starter projects.
+11. **Ebooks and educational products** - web development and React ebooks,
+    design-system and SEO guides, cheat sheets, coding resources and video
+    mini-courses.
+12. **SEO and digital marketing** - technical and on-page SEO, audits, keyword
+    research, Search Console, Google Analytics, Meta Pixel, conversion tracking,
+    landing-page optimisation and social-media setup.
+13. **Automation** - business, email, lead, invoicing, order and reporting
+    automation plus CRM, webhook, Telegram and WhatsApp integrations.
+14. **Payment and digital delivery** - Razorpay and Stripe checkout, webhook
+    handling, invoicing, secure time-limited downloads and refund workflows.
+15. **Hosting and domain services** - domain, DNS, Cloudflare, hosting, VPS,
+    migration, SSL, email-domain setup, CDN, monitoring and backups.
+
+## Engagement process
+
+1. Tell us your needs - a one-minute form with goals, audience and a feature list.
+2. Scope and proposal - a transparent, fixed-price quote with milestones,
+   timeline and tech specs.
+3. Agile build and feedback - modern stacks, sprint previews and weekly updates.
+4. Launch and support - QA, cloud deployment, asset handover and a maintenance
+   warranty.
+
+## Guarantees
+
+- Free architecture and technical consultation.
+- Fixed upfront quote with zero hidden charges.
+- NDA signed on request for confidential ideas.
+
+## Guarantees about visitor privacy
+
+Visitor metrics collected by this site are anonymised with SHA-256 before
+storage and are never sold or shared. The admin area and the API are not
+indexed.
+
+## Pages
+
+- [Home](/): services, process, trust signals and the project inquiry form
+- [Sitemap](/sitemap.xml)
+- [llms.txt](/llms.txt): this file

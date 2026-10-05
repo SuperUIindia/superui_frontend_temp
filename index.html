@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      SuperUI - pre-render SEO / AEO / GEO defaults.
+      These values are the floor: crawlers and answer engines that never execute
+      JavaScript read exactly this. At runtime frontend/src/lib/seo.js overrides
+      them with the database-driven `seo` section and injects the JSON-LD graph.
+      Keep this file in sync with frontend/.env (VITE_DEFAULT_TITLE etc.) and with
+      frontend/public/robots.txt, sitemap.xml and llms.txt - the brand, city and
+      region must not drift apart between those files.
+    -->
+    <title>SuperUI — Web Development, UI/UX Design &amp; Custom Software Studio</title>
+    <meta
+      name="description"
+      content="SuperUI is a full-stack web development and UI/UX design studio in Warangal, Telangana, India. We build fast, secure, SEO-optimised websites, e-commerce stores and custom web applications. Get a fixed-price proposal within 24 hours."
+    />
+    <meta
+      name="keywords"
+      content="web development company Warangal, custom web application development, UI UX design services India, ecommerce website development, React and Next.js developers, website maintenance and SEO services, SuperUI"
+    />
+    <meta name="author" content="SuperUI" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <meta name="rating" content="general" />
+    <meta name="theme-color" content="#FF5E00" />
+    <meta name="color-scheme" content="light" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="generator" content="SuperUI" />
+
+    <!-- Canonical / hreflang -->
+    <link rel="canonical" href="https://superui.in/" />
+    <link rel="alternate" hreflang="x-default" href="https://superui.in/" />
+    <link rel="alternate" hreflang="en-in" href="https://superui.in/" />
+
+    <!--
+      GEO / local SEO. geo.region, geo.placename and geo.position are read by
+      Google, Bing and several AI answer engines to place the business.
+    -->
+    <meta name="geo.region" content="IN-TG" />
+    <meta name="geo.placename" content="Warangal, Telangana, India" />
+    <meta name="geo.position" content="17.9689;79.5941" />
+    <meta name="ICBM" content="17.9689, 79.5941" />
+    <link rel="alternate" type="application/rss+xml" title="SuperUI" href="/feed.xml" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://superui.in/" />
+    <meta property="og:site_name" content="SuperUI" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:title" content="SuperUI — Web Development, UI/UX Design &amp; Custom Software Studio" />
+    <meta
+      property="og:description"
+      content="A full-stack engineering and design studio in Warangal delivering high-speed web apps, e-commerce stores, custom software and conversion-optimised websites."
+    />
+    <meta property="og:image" content="https://superui.in/superui_logo.png" />
+    <meta property="og:image:alt" content="SuperUI logo" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://superui.in/" />
+    <meta name="twitter:title" content="SuperUI — Web Development, UI/UX Design &amp; Custom Software Studio" />
+    <meta
+      name="twitter:description"
+      content="A full-stack engineering and design studio in Warangal delivering high-speed web apps, e-commerce stores, custom software and conversion-optimised websites."
+    />
+    <meta name="twitter:image" content="https://superui.in/superui_logo.png" />
+    <meta name="twitter:image:alt" content="SuperUI logo" />
+
+    <!-- Favicon: the SuperUI logo, served from frontend/public -->
+    <link rel="icon" type="image/png" sizes="512x512" href="/superui_logo.png" />
+    <link rel="icon" type="image/png" sizes="256x256" href="/superui_logo.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/superui_logo.png" />
+    <link rel="shortcut icon" type="image/png" href="/superui_logo.png" />
+    <link rel="apple-touch-icon" href="/superui_logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/superui_logo.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="msapplication-TileColor" content="#FF5E00" />
+    <meta name="msapplication-TileImage" content="/superui_logo.png" />
+
+    <!-- PWA / installability -->
+    <meta name="application-name" content="SuperUI" />
+    <meta name="apple-mobile-web-app-title" content="SuperUI" />
+
+    <!--
+      Google Fonts: Plus Jakarta Sans & Inter.
+      Loaded with a plain blocking stylesheet link: the usual
+      `media="print" onload="this.media='all'"` trick needs an inline event
+      handler, which a strict script-src CSP blocks. preconnect still removes the
+      DNS + TLS cost, so this costs one render-blocking request and nothing else.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    />
+
+    <!--
+      JSON-LD. The runtime graph in frontend/src/lib/seo.js is richer and
+      includes a live Service catalogue, FAQPage and BreadcrumbList; this static
+      graph is the fallback for non-JS crawlers and must not be removed.
+      A JSON-LD data block is not executed, so it is not blocked by the
+      `script-src 'self'` Content-Security-Policy set in vercel.json.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": ["Organization", "ProfessionalService"],
+            "@id": "https://superui.in/#organization",
+            "name": "SuperUI",
+            "url": "https://superui.in/",
+            "logo": "https://superui.in/superui_logo.png",
+            "image": "https://superui.in/superui_logo.png",
+            "description": "SuperUI is a full-stack web development and UI/UX design studio in Warangal, Telangana, India building fast, secure, SEO-optimised websites, e-commerce stores and custom web applications.",
+            "email": "hello.superui@gmail.com",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Warangal",
+              "addressRegion": "Telangana",
+              "addressCountry": "IN-TG",
+              "postalCode": "506002"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 17.9689,
+              "longitude": 79.5941
+            },
+            "areaServed": [
+              { "@type": "Country", "name": "India" },
+              { "@type": "Country", "name": "United Arab Emirates" },
+              { "@type": "Country", "name": "United Kingdom" },
+              { "@type": "Country", "name": "United States" },
+              { "@type": "Country", "name": "Singapore" }
+            ],
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "contactType": "sales",
+              "email": "hello.superui@gmail.com",
+              "availableLanguage": ["en", "hi"],
+              "areaServed": "Worldwide"
+            }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://superui.in/#website",
+            "url": "https://superui.in/",
+            "name": "SuperUI",
+            "inLanguage": "en-IN",
+            "publisher": { "@id": "https://superui.in/#organization" }
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://superui.in/#webpage",
+            "url": "https://superui.in/",
+            "name": "SuperUI — Web Development, UI/UX Design & Custom Software Studio",
+            "isPartOf": { "@id": "https://superui.in/#website" },
+            "about": { "@id": "https://superui.in/#organization" },
+            "inLanguage": "en-IN",
+            "speakable": {
+              "@type": "SpeakableSpecification",
+              "cssSelector": ["#top h1", "#services h2", "#how-it-works h2", "#why-us h2", "#contact h2"]
+            }
+          },
+          {
+            "@type": "Service",
+            "@id": "https://superui.in/#service",
+            "name": "SuperUI Digital Product Engineering",
+            "provider": { "@id": "https://superui.in/#organization" },
+            "areaServed": "Worldwide",
+            "serviceType": [
+              "Website Development",
+              "E-commerce Development",
+              "UI/UX & Design",
+              "React & Frontend Development",
+              "Backend & API Development",
+              "Website Maintenance",
+              "Security Services",
+              "Cloud & Deployment",
+              "SEO & Digital Marketing",
+              "Automation"
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://superui.in/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What does SuperUI do?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "SuperUI is a full-stack web development and UI/UX design studio that builds fast, secure, SEO-optimised websites, e-commerce stores, admin dashboards and custom web applications, with ongoing maintenance and support."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How long does a project take?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "The process is a four-step engagement: you share your requirements, we return a transparent fixed-price proposal with milestones and a timeline, we build in agile sprints with previews, and we launch with QA, deployment and a maintenance warranty."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How much does a website cost?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Pricing is fixed upfront with zero hidden charges and depends on scope. Submit the inquiry form and you receive an itemised quote with milestones and a timeline within 24 business hours."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How quickly do you respond?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Every inquiry receives a tailored response within 24 business hours. The intake form blocks automated spam with a honeypot and is protected by rate limiting."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body class="bg-[#FFFFFF] text-[#111111] font-sans antialiased selection:bg-[#FFF1E8] selection:text-[#FF5E00]">
+    <div id="root"></div>
+    <noscript>
+      <div style="max-width: 720px; margin: 0 auto; padding: 48px 24px; font-family: system-ui, sans-serif; color: #000000; background-color: #FFFFFF">
+        <h1>SuperUI — Web Development, UI/UX Design &amp; Custom Software Studio</h1>
+        <p>
+          SuperUI is a full-stack web development and UI/UX design studio based in Warangal, Telangana, India. We build
+          fast, secure, SEO-optimised websites, e-commerce stores, admin dashboards and custom web applications for
+          founders, SMEs and enterprises.
+        </p>
+        <h2>Services</h2>
+        <ul>
+          <li>Website development</li>
+          <li>E-commerce development</li>
+          <li>UI/UX and product design</li>
+          <li>React and Next.js frontend development</li>
+          <li>Node.js, Express and REST API backends</li>
+          <li>Admin panels, CRMs and analytics dashboards</li>
+          <li>Website maintenance and security hardening</li>
+          <li>Cloud deployment, CI/CD and DevOps</li>
+          <li>SEO, analytics and digital marketing</li>
+          <li>Business workflow automation</li>
+        </ul>
+        <h2>Start a project</h2>
+        <p>
+          Email
+          <a href="mailto:hello.superui@gmail.com">hello.superui@gmail.com</a>
+          and we reply within 24 business hours with a transparent, fixed-price proposal.
+        </p>
+        <p>JavaScript is disabled, so the interactive inquiry form cannot be shown on this page.</p>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

@@ -1,0 +1,106 @@
+# ============================================================================
+# SuperUI frontend - ignore rules
+#
+# Everything that must never reach the repository is listed here. In particular
+# .env files are ignored: every VITE_* value is inlined into the public
+# JavaScript bundle, so a committed .env leaks its whole content to visitors.
+# ============================================================================
+
+# --- Dependencies ----------------------------------------------------------
+node_modules/
+.pnp
+.pnp.js
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# --- Build output ----------------------------------------------------------
+dist/
+dist-ssr/
+build/
+.vite/
+*.local
+
+# --- Environment files (NEVER COMMIT) --------------------------------------
+.env
+.env.*
+!.env.example
+
+# --- Logs ------------------------------------------------------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# --- Caches ----------------------------------------------------------------
+.cache/
+.parcel-cache/
+.temp/
+.tmp/
+tmp/
+.temp-cache/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# --- Test / coverage -------------------------------------------------------
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+test/
+tests/
+__tests__/
+*.spec.js
+*.spec.jsx
+*.spec.ts
+*.spec.tsx
+*.test.js
+*.test.jsx
+*.test.ts
+*.test.tsx
+
+# --- Deployment / platform --------------------------------------------------
+.vercel
+.netlify
+firebase-debug.log
+*.firebase
+.wrangler
+
+# --- Editors ---------------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS --------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# --- Secrets & keys --------------------------------------------------------
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+service-account*.json
+secrets.json
+
+# --- Misc ------------------------------------------------------------------
+npm-debug.log*
+build-info.txt
+
+# Other package managers' lockfiles. package-lock.json IS committed on purpose:
+# the exact dependency tree has to be reproducible for a deployment build.
+yarn.lock
+pnpm-lock.yaml

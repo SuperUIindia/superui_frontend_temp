@@ -1,0 +1,6 @@
+# llms-llms.txt - index of the llms files for SuperUI
+#
+# Per the llms.txt convention this file is a sitemap for markdown/plain-text
+# documents intended for language models and answer engines.
+
+- [llms.txt](/llms.txt): plain-text overview of SuperUI - who it is, the 15 service categories, the engagement process and contact details.

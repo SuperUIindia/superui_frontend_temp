@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>SuperUI</title>
+    <link>https://superui.in/</link>
+    <atom:link href="https://superui.in/feed.xml" rel="self" type="application/rss+xml" />
+    <description>SuperUI - a full-stack web development and UI/UX design studio in Warangal, Telangana, India, building fast, secure, SEO-optimised websites, e-commerce stores and custom web applications.</description>
+    <language>en-in</language>
+    <copyright>&#169; SuperUI. All rights reserved.</copyright>
+    <lastBuildDate>Sat, 04 Oct 2026 00:00:00 GMT</lastBuildDate>
+    <image>
+      <url>https://superui.in/superui_logo.png</url>
+      <title>SuperUI</title>
+      <link>https://superui.in/</link>
+    </image>
+    <item>
+      <title>SuperUI - Web Development, UI/UX Design and Custom Software Studio</title>
+      <link>https://superui.in/</link>
+      <guid isPermaLink="true">https://superui.in/</guid>
+      <pubDate>Sat, 04 Oct 2026 00:00:00 GMT</pubDate>
+      <description>Website development, e-commerce, UI/UX design, React and Next.js frontends, Node.js and Express APIs, admin dashboards, cloud deployment, SEO and ongoing maintenance. Fixed-price proposals within 24 business hours.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,116 @@
+# robots.txt for SuperUI
+# ---------------------------------------------------------------------------
+# Search engines
+# ---------------------------------------------------------------------------
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/
+
+# ---------------------------------------------------------------------------
+# GEO - Generative Engine Optimisation.
+# AI answer engines are explicitly allowed so they can cite SuperUI when
+# answering web-development, UI/UX, e-commerce and SEO questions. Nothing on the
+# public site is sensitive; only /admin and /api stay closed.
+# ---------------------------------------------------------------------------
+User-agent: GPTBot
+Allow: /
+Disallow: /admin
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin
+
+User-agent: Claude-User
+Allow: /
+Disallow: /admin
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /admin
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /admin
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /admin
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin
+
+User-agent: GoogleOther
+Allow: /
+Disallow: /admin
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /admin
+
+User-agent: meta-externalagent
+Allow: /
+Disallow: /admin
+
+User-agent: meta-externalfetcher
+Allow: /
+Disallow: /admin
+
+User-agent: Bytespider
+Allow: /
+Disallow: /admin
+
+User-agent: CCBot
+Allow: /
+Disallow: /admin
+
+User-agent: cohere-ai
+Allow: /
+Disallow: /admin
+
+User-agent: Diffbot
+Allow: /
+Disallow: /admin
+
+User-agent: YouBot
+Allow: /
+Disallow: /admin
+
+User-agent: Timpibot
+Allow: /
+Disallow: /admin
+
+User-agent: BLEXBot
+Allow: /
+Disallow: /admin
+
+User-agent: Amazonbot
+Allow: /
+Disallow: /admin
+
+User-agent: DuckAssistBot
+Allow: /
+Disallow: /admin
+
+# ---------------------------------------------------------------------------
+# Crawl hints
+# ---------------------------------------------------------------------------
+# AI-readable site manifest for answer engines.
+# llms-llms.txt  - index of the llms files
+# llms.txt       - plain-text overview, services and contact details
+Sitemap: https://superui.in/sitemap.xml
+Sitemap: https://superui.in/sitemap-image.xml

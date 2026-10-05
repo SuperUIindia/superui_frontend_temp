@@ -1,0 +1,49 @@
+{
+  "name": "SuperUI",
+  "short_name": "SuperUI",
+  "description": "SuperUI - full-stack web development and UI/UX design studio in Warangal, Telangana, India. Fast, secure, SEO-optimised websites, e-commerce stores and custom web applications.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FF5E00",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/superui_logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/superui_logo.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/superui_logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start a project",
+      "short_name": "Inquiry",
+      "url": "/#contact",
+      "description": "Open the project inquiry form"
+    },
+    {
+      "name": "View services",
+      "short_name": "Services",
+      "url": "/#services",
+      "description": "Browse the full service catalogue"
+    }
+  ]
+}
