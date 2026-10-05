@@ -12,15 +12,10 @@ export default function Hero({ onOpenContactModal }) {
   const shouldReduceMotion = useReducedMotion();
   const content = useContent('hero');
 
-  // Splits the DB headline into words, highlighting from `headlineHighlightFrom`
-  // onwards. The count is clamped so a longer or shorter headline still works.
+  // Splits the DB headline into words so each can be animated independently.
   const headlineWords = String(content.headline || '')
     .split(/\s+/)
-    .filter(Boolean)
-    .map((text, index, all) => ({
-      text,
-      highlight: index >= Math.min(content.headlineHighlightFrom ?? 4, all.length)
-    }));
+    .filter(Boolean);
 
   const trustPoints = Array.isArray(content.trustPoints) ? content.trustPoints : [];
 
@@ -75,24 +70,20 @@ export default function Hero({ onOpenContactModal }) {
             {content.pillText}
           </motion.div>
 
-          {/* Word-by-word animated headline */}
+          {/* Word-by-word animated headline.
+              Solid #111111 on every word: a bg-clip-text gradient paints only
+              inside the element padding box, so descenders (g, y, p, j, q) that
+              fall below the line box lost their background and rendered
+              invisible against text-transparent. */}
           <motion.h1
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-[#111111] tracking-tight leading-[1.08] mb-6"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-[#111111] tracking-tight leading-[1.15] pb-2 mb-6"
           >
-            {headlineWords.map((item, index) => (
-              <motion.span
-                key={index}
-                variants={wordVariants}
-                className={`inline-block mr-[0.28em] last:mr-0 ${
-                  item.highlight
-                    ? 'bg-gradient-to-r from-[#FF5E00] to-[#7C3AED] bg-clip-text text-transparent'
-                    : ''
-                }`}
-              >
-                {item.text}
+            {headlineWords.map((word, index) => (
+              <motion.span key={index} variants={wordVariants} className="inline-block mr-[0.28em] last:mr-0">
+                {word}
               </motion.span>
             ))}
           </motion.h1>
