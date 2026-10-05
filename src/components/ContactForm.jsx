@@ -1,21 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { AlertCircle, Send, Check } from 'lucide-react';
+import { AlertCircle, Send } from 'lucide-react';
 import { api } from '../lib/api';
 import { getVisitorId } from '../lib/tracking';
 import { logError } from '../lib/logger';
 import { useServices } from '../lib/services';
-import { INSTAGRAM_URL, INSTAGRAM_HANDLE, INSTAGRAM_DM_URL } from '../lib/social';
-import { EXTERNAL_REL } from '../lib/sanitize';
-import InstagramIcon from './InstagramIcon';
 import Button from './Button';
+import SubmissionSuccessPopup from './SubmissionSuccessPopup';
 import { useContent } from '../lib/siteContent';
-import { SITE_CONFIG, BUSINESS_CONFIG } from '../lib/env';
+import { BUSINESS_CONFIG } from '../lib/env';
 
-export default function ContactForm({ initialService = '', onSuccessCallback, isModal = false }) {
+/**
+ * `idPrefix` namespaces every field id. The form renders in two places at once
+ * (inline in the contact section and inside the dialog), and duplicate ids would
+ * make a label in the dialog focus the inline field instead of its own.
+ */
+export default function ContactForm({
+  initialService = '',
+  onSuccessCallback,
+  isModal = false,
+  idPrefix = 'contact'
+}) {
   const services = useServices();
   const c = useContent('contactform');
   const f = c.fields || {};
+  const fieldId = (name) => `${idPrefix}-${name}`;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -121,7 +129,8 @@ export default function ContactForm({ initialService = '', onSuccessCallback, is
       await api.post('/api/leads', payload);
 
       // The reference ID is intentionally not shown to the visitor; it is still
-      // recorded in the admin panel and the confirmation email.
+      // recorded in the admin panel and the confirmation email. Confirmation is
+      // a popup, so the form underneath stays exactly where the visitor left it.
       setSubmitted(true);
       if (onSuccessCallback) {
         onSuccessCallback();
@@ -134,7 +143,9 @@ export default function ContactForm({ initialService = '', onSuccessCallback, is
     }
   };
 
-  const handleReset = () => {
+  // Closing the confirmation popup also clears the form, so the visitor can send
+  // a second request without reloading the page.
+  const handleDismissSuccess = () => {
     setSubmitted(false);
     setFormData({
       name: '',
@@ -155,91 +166,19 @@ export default function ContactForm({ initialService = '', onSuccessCallback, is
         : 'border-[#EDEDED] focus:border-[#FF5E00] focus:ring-[#FF5E00]/20'
     }`;
 
-  // Success State View
-  if (submitted) {
-    const firstName = (formData.name || '').trim().split(/\s+/)[0] || c.successFallbackName || 'there';
-
-    return (
-      <div className="py-10 px-4 text-center flex flex-col items-center justify-center">
-        {/* Animated Success Checkmark */}
-        <motion.div
-          initial={{ scale: 0, rotate: -45 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-          className="w-16 h-16 rounded-full bg-green-50 border-2 border-green-500 flex items-center justify-center text-green-600 mb-5 shadow-lg shadow-green-500/20"
-        >
-          <motion.div
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-          >
-            <Check className="w-8 h-8 stroke-[3]" />
-          </motion.div>
-        </motion.div>
-
-        <motion.h3
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-2xl sm:text-3xl font-extrabold text-green-700 mb-2 tracking-tight"
-        >
-          {c.successHeadingPrefix || 'Thank you dear'} {firstName}!
-        </motion.h3>
-
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="text-base text-green-700/80 max-w-md mb-6 leading-relaxed"
-        >
-          {c.successBody}
-        </motion.p>
-
-        {/* Instagram contact */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="w-full max-w-sm rounded-2xl bg-[#FAFAFA] border border-[#EDEDED] p-4 sm:p-5"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3">
-            {c.successFasterReply || 'Want a faster reply?'}
-          </p>
-
-          <a
-            href={INSTAGRAM_DM_URL}
-            target="_blank"
-            rel={EXTERNAL_REL}
-            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#FF5E00] to-[#7C3AED] text-white text-sm font-bold shadow-lg shadow-[#FF5E00]/20 hover:opacity-95 transition-opacity"
-          >
-            <InstagramIcon className="w-4 h-4" />
-            {c.successDmCta || 'Message me on Instagram'}
-          </a>
-
-          <a
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel={EXTERNAL_REL}
-            className="mt-2.5 flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-white border border-[#EDEDED] text-[#111111] text-sm font-semibold hover:border-[#7C3AED]/40 hover:text-[#7C3AED] transition-colors"
-          >
-            <InstagramIcon className="w-4 h-4" />
-            {c.successFollowCta || `Follow ${SITE_CONFIG.brand} on Instagram`}
-          </a>
-
-          <p className="mt-2.5 text-[11px] text-[#6B6B6B]">
-            {INSTAGRAM_HANDLE}
-          </p>
-        </motion.div>
-
-        <Button variant="outline" size="sm" onClick={handleReset} className="mt-6">
-          {c.successSubmitAnother || 'Submit Another Request'}
-        </Button>
-      </div>
-    );
-  }
+  const submittedFirstName = (formData.name || '').trim().split(/\s+/)[0] || '';
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
+      {/* Confirmation popup, shown only once every field has been accepted by the
+          API. It portals to <body>, so it adds nothing to the form's own layout
+          and the form stays exactly where the visitor left it. */}
+      <SubmissionSuccessPopup
+        isOpen={submitted}
+        firstName={submittedFirstName}
+        onClose={handleDismissSuccess}
+      />
+
       {serverError && (
         <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2.5">
           <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
@@ -249,9 +188,9 @@ export default function ContactForm({ initialService = '', onSuccessCallback, is
 
       {/* Honeypot field (hidden from real users, tricks spam bots) */}
       <div className="hidden" aria-hidden="true">
-        <label htmlFor="hp_field">{c.honeypotLabel || 'Leave this empty'}</label>
+        <label htmlFor={fieldId('honeypot')}>{c.honeypotLabel || 'Leave this empty'}</label>
         <input
-          id="hp_field"
+          id={fieldId('honeypot')}
           type="text"
           name="honeypot"
           value={formData.honeypot}
@@ -264,11 +203,11 @@ export default function ContactForm({ initialService = '', onSuccessCallback, is
       {/* Name & Email */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="name" className="block text-xs font-semibold text-[#111111] mb-1.5">
+          <label htmlFor={fieldId('name')} className="block text-xs font-semibold text-[#111111] mb-1.5">
             {f.name.label} <span className="text-[#FF5E00]">*</span>
           </label>
           <input
-            id="name"
+            id={fieldId('name')}
             name="name"
             type="text"
             required
@@ -285,11 +224,11 @@ export default function ContactForm({ initialService = '', onSuccessCallback, is
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-xs font-semibold text-[#111111] mb-1.5">
+          <label htmlFor={fieldId('email')} className="block text-xs font-semibold text-[#111111] mb-1.5">
             {f.email.label} <span className="text-[#FF5E00]">*</span>
           </label>
           <input
-            id="email"
+            id={fieldId('email')}
             name="email"
             type="email"
             required
@@ -306,11 +245,11 @@ export default function ContactForm({ initialService = '', onSuccessCallback, is
       {/* Phone & Instagram */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="phone" className="block text-xs font-semibold text-[#111111] mb-1.5">
+          <label htmlFor={fieldId('phone')} className="block text-xs font-semibold text-[#111111] mb-1.5">
             {f.phone.label} <span className="text-[#FF5E00]">*</span>
           </label>
           <input
-            id="phone"
+            id={fieldId('phone')}
             name="phone"
             type="tel"
             required
@@ -324,11 +263,11 @@ export default function ContactForm({ initialService = '', onSuccessCallback, is
         </div>
 
         <div>
-          <label htmlFor="instagramId" className="block text-xs font-semibold text-[#111111] mb-1.5">
+          <label htmlFor={fieldId('instagramId')} className="block text-xs font-semibold text-[#111111] mb-1.5">
             {f.instagram?.label} <span className="text-[#6B6B6B] font-normal">{c.optionalSuffix || '(Optional)'}</span>
           </label>
           <input
-            id="instagramId"
+            id={fieldId('instagramId')}
             name="instagramId"
             type="text"
             placeholder={f.instagram?.placeholder}
@@ -342,11 +281,11 @@ export default function ContactForm({ initialService = '', onSuccessCallback, is
 
       {/* Purpose */}
       <div>
-        <label htmlFor="purpose" className="block text-xs font-semibold text-[#111111] mb-1.5">
+        <label htmlFor={fieldId('purpose')} className="block text-xs font-semibold text-[#111111] mb-1.5">
           {f.purpose?.label} <span className="text-[#FF5E00]">*</span>
         </label>
         <select
-          id="purpose"
+          id={fieldId('purpose')}
           name="purpose"
           required
           value={formData.purpose}
@@ -371,7 +310,7 @@ export default function ContactForm({ initialService = '', onSuccessCallback, is
       {/* Reason / Note */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <label htmlFor="description" className="block text-xs font-semibold text-[#111111]">
+          <label htmlFor={fieldId('description')} className="block text-xs font-semibold text-[#111111]">
             {f.description?.label} <span className="text-[#FF5E00]">*</span>
           </label>
           <span className="text-[11px] text-[#6B6B6B]">
@@ -379,7 +318,7 @@ export default function ContactForm({ initialService = '', onSuccessCallback, is
           </span>
         </div>
         <textarea
-          id="description"
+          id={fieldId('description')}
           name="description"
           rows={isModal ? 3 : 4}
           required

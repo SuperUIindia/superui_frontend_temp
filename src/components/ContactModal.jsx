@@ -120,8 +120,11 @@ export default function ContactModal({ isOpen, onClose, selectedService = '' }) 
             <ContactForm
               initialService={selectedService}
               isModal={true}
+              idPrefix="contact-modal"
               onSuccessCallback={() => {
-                // Keep modal open so client sees checkmark reference code
+                // Confirmation is the submission popup; the dialog stays open
+                // underneath it so closing the popup returns the visitor to the
+                // form they filled in.
               }}
             />
           </motion.div>
