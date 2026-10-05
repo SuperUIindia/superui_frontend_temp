@@ -104,8 +104,10 @@ export default function ContactSection() {
             <Reveal delay={0.2}>
               <div className="p-6 sm:p-10 rounded-3xl bg-white border border-[#EDEDED] shadow-xl shadow-black/[0.03]">
                 <div className="text-center mb-7">
-                  <h3 className="text-xl font-bold text-[#111111]">{content.formCardTitle}</h3>
-                  <p className="text-sm text-[#6B6B6B] mt-2 max-w-md mx-auto">{content.formCardSubtitle}</p>
+                  <h3 className="text-2xl sm:text-[28px] font-extrabold text-[#111111] tracking-tight">
+                    {content.formCardTitle}
+                  </h3>
+                  <p className="text-sm text-[#6B6B6B] mt-2.5 max-w-md mx-auto">{content.formCardSubtitle}</p>
                 </div>
 
                 <ContactForm idPrefix="contact-section" />

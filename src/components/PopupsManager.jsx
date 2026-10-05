@@ -93,7 +93,7 @@ function PopupEditor({ popup, onClose, onSaved }) {
     if (!/^https?:\/\//i.test(form.imageUrl.trim())) {
       next.imageUrl = 'Poster image URL must start with http:// or https://';
     }
-    if (!form.title.trim()) next.title = 'Header text is required';
+    // Header text is optional: an empty value renders a poster-only offer.
     if (!form.fromDate) next.fromDate = 'Start date is required';
     if (!form.toDate) next.toDate = 'End date is required';
     if (form.fromDate && form.toDate && form.toDate < form.fromDate) {
@@ -224,14 +224,14 @@ function PopupEditor({ popup, onClose, onSaved }) {
             <div className="space-y-3.5">
               <div>
                 <label htmlFor="popupTitle" className="block text-xs font-semibold text-[#111111] mb-1.5">
-                  Header Text <span className="text-[#FF5E00]">*</span>
+                  Header Text <span className="text-[#6B6B6B] font-normal">(Optional)</span>
                 </label>
                 <input
                   id="popupTitle"
                   type="text"
                   value={form.title}
                   onChange={set('title')}
-                  placeholder="Limited time offer"
+                  placeholder="Leave empty for a poster-only offer"
                   className={fieldCls(errors.title)}
                 />
                 {errors.title && <p className="mt-1 text-[11px] text-red-500">{errors.title}</p>}

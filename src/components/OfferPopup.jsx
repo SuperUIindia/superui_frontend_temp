@@ -76,6 +76,12 @@ export default function OfferPopup({ onOpenContact }) {
   // the placeholder instead of reaching the browser as an arbitrary scheme.
   const posterUrl = popup ? safeImageUrl(popup.imageUrl) : '';
 
+  // The header text is optional: a poster-only offer renders no heading at all,
+  // and an empty one must never leave a bare <h2></h2> or an empty accessible
+  // name behind.
+  const headingText = popup ? String(popup.title || '').trim() : '';
+  const dialogLabel = headingText || 'Special offer';
+
   const load = useCallback(async () => {
     try {
       const res = await api.get('/api/popups');
@@ -138,7 +144,7 @@ export default function OfferPopup({ onOpenContact }) {
           className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
           role="dialog"
           aria-modal="true"
-          aria-label={popup.title}
+          aria-label={dialogLabel}
           onKeyDown={(e) => {
             if (e.key === 'Escape') handleDismiss();
           }}
@@ -190,9 +196,11 @@ export default function OfferPopup({ onOpenContact }) {
             </div>
 
             <div className="p-5 sm:p-6">
-              <h2 className="text-lg sm:text-xl font-extrabold text-[#111111] tracking-tight mb-1.5 pr-8">
-                {popup.title}
-              </h2>
+              {headingText && (
+                <h2 className="text-lg sm:text-xl font-extrabold text-[#111111] tracking-tight mb-1.5 pr-8">
+                  {headingText}
+                </h2>
+              )}
 
               {popup.bodyText && (
                 <p className="text-sm text-[#6B6B6B] leading-relaxed mb-3">{popup.bodyText}</p>

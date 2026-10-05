@@ -12,9 +12,22 @@ export default function Hero({ onOpenContactModal }) {
   const shouldReduceMotion = useReducedMotion();
   const content = useContent('hero');
 
-  // Split out only to keep the heading a single text node: animating per word
-  // made the sentence unreadable until the last word landed.
   const headline = String(content.headline || '').trim();
+
+  // The headline is split once, at the word the admin marks as the highlight, so
+  // the closing phrase ("websites that grow your business.") carries the brand
+  // orange while the rest stays black. `headlineHighlightFrom` counts words from
+  // zero; a value outside the range renders the whole line in one colour.
+  const headlineParts = (() => {
+    const words = headline.split(/\s+/).filter(Boolean);
+    const from = Number(content.headlineHighlightFrom);
+    const split =
+      Number.isInteger(from) && from > 0 && from < words.length ? from : words.length;
+    return {
+      plain: words.slice(0, split).join(' '),
+      accent: words.slice(split).join(' ')
+    };
+  })();
 
   const trustPoints = Array.isArray(content.trustPoints) ? content.trustPoints : [];
 
@@ -30,7 +43,8 @@ export default function Hero({ onOpenContactModal }) {
   // while it rises. It is deliberately NOT a per-word stagger - words appearing
   // one at a time made a sentence nobody can read until the last word landed,
   // and the per-word clipping that effect needs is what previously clipped
-  // descenders off the line.
+  // descenders off the line. The blur lives on this element, never on the two
+  // coloured spans, so a filtered span cannot rasterise its own text away.
   const headlineVariants = {
     hidden: {
       opacity: 0,
@@ -66,14 +80,21 @@ export default function Hero({ onOpenContactModal }) {
           </motion.div>
 
           {/* The headline resolves in as one block, so the sentence is readable
-              immediately instead of assembling word by word. */}
+              immediately instead of assembling word by word. Its closing
+              phrase keeps the brand orange. */}
           <motion.h1
             variants={headlineVariants}
             initial="hidden"
             animate="visible"
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-[#111111] tracking-tight leading-[1.15] pb-2 mb-6 will-change-[transform,filter]"
           >
-            {headline}
+            {headlineParts.plain}
+            {headlineParts.accent && (
+              <>
+                {' '}
+                <span className="text-[#FF5E00]">{headlineParts.accent}</span>
+              </>
+            )}
           </motion.h1>
 
           {/* Subtext */}
