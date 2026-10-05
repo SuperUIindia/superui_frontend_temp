@@ -39,6 +39,9 @@ const API_PREFIX = '/api/';
  * A blank VITE_API_BASE_URL means same-origin "/api/...", which is the correct
  * target for a Vercel deployment that rewrites /api to the backend and for local
  * development behind the Vite proxy.
+ *
+ * API_BASE is already stripped of any trailing "/api" by lib/env.js, so this
+ * concatenation can never emit "/api/api/...".
  */
 function resolveApiUrl(endpoint) {
   return `${API_BASE}${endpoint}`;

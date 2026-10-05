@@ -166,7 +166,12 @@ export default function ContactForm({
         : 'border-[#EDEDED] focus:border-[#FF5E00] focus:ring-[#FF5E00]/20'
     }`;
 
-  const submittedFirstName = (formData.name || '').trim().split(/\s+/)[0] || '';
+  // The visitor's name exactly as they typed it. Splitting on whitespace and
+  // taking [0] greeted "Priya Sharma" as "Thank you dear Priya!" and silently
+  // dropped the surname, which reads as though the form never recorded the name.
+  // Collapsing runs of whitespace keeps the confirmation tidy without altering
+  // what the visitor entered.
+  const submittedFullName = (formData.name || '').trim().replace(/\s+/g, ' ');
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -175,7 +180,7 @@ export default function ContactForm({
           and the form stays exactly where the visitor left it. */}
       <SubmissionSuccessPopup
         isOpen={submitted}
-        firstName={submittedFirstName}
+        fullName={submittedFullName}
         onClose={handleDismissSuccess}
       />
 

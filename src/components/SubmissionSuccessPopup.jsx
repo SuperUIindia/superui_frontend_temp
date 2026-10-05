@@ -14,7 +14,7 @@ import InstagramIcon from './InstagramIcon';
  * It sits above the dialog (z-[95] vs the modal's z-50) so a submission made
  * from either place is confirmed the same way.
  */
-export default function SubmissionSuccessPopup({ isOpen, firstName = '', onClose }) {
+export default function SubmissionSuccessPopup({ isOpen, fullName = '', onClose }) {
   const panelRef = useRef(null);
   const c = useContent('contactform');
 
@@ -69,7 +69,9 @@ export default function SubmissionSuccessPopup({ isOpen, firstName = '', onClose
 
   if (typeof document === 'undefined') return null;
 
-  const name = firstName || c.successFallbackName || 'there';
+  // The full name the visitor typed, never just the first token: greeting
+  // "Priya" for "Priya Sharma" looks like the name was not recorded at all.
+  const name = fullName.trim() || c.successFallbackName || 'there';
 
   return createPortal(
     <AnimatePresence>
@@ -123,7 +125,7 @@ export default function SubmissionSuccessPopup({ isOpen, firstName = '', onClose
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="text-2xl sm:text-3xl font-extrabold text-green-700 tracking-tight"
+              className="text-2xl sm:text-3xl font-extrabold text-green-700 tracking-tight break-words"
             >
               {c.successHeadingPrefix || 'Thank you dear'} {name}!
             </motion.h2>

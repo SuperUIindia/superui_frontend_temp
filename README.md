@@ -111,22 +111,41 @@ and Development as needed. Variables set in Vercel take precedence over
 
 ### Pointing `/api` at the backend
 
-With `VITE_API_BASE_URL` blank, requests go to same-origin `/api/...`. That works
-when Vercel routes `/api` to the backend — add a rewrite to `vercel.json` using
-your backend's deployment URL:
+With `VITE_API_BASE_URL` blank, requests go to same-origin `/api/...`. That only
+reaches the backend when the host proxies `/api` to it. On Vercel, add both
+rewrites to `vercel.json` — **in this order**:
 
 ```json
 "rewrites": [
   { "source": "/api/:path*", "destination": "https://YOUR-BACKEND.example.com/api/:path*" },
-  { "source": "/((?!api/|assets/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }
+  { "source": "/(.*)", "destination": "/index.html" }
 ]
 ```
 
-The `/api` rewrite must come **first**, and the SPA rewrite must keep excluding
-`api/` so API 404s are not answered with `index.html`.
+Do **not** try to exclude `api/` and `assets/` from the SPA rewrite with a
+negative lookahead such as `"/((?!api/|assets/).*)"`. Vercel matches `source`
+with path-to-regexp, not a full regex engine, and that pattern silently matches
+nothing: every client-side route returns `404` from the static origin. The symptom
+is a homepage that loads but a `/admin` that never resolves. `rewrites` are only
+applied *after* the filesystem check, so the plain `/(.*)` catch-all cannot shadow
+`index.html`, `/assets/*` or any other real file — they are served before any
+rewrite is considered.
+
+The `/api` rewrite must come **first** so an API path is never answered with
+`index.html`.
+
+Verify both halves after any deploy:
+
+```bash
+curl -sI https://YOUR-FRONTEND.example.com/admin            # must be 200, not 404
+curl -s  https://YOUR-FRONTEND.example.com/api/health      # must be the API's JSON
+```
 
 If the backend is on a different domain instead, set `VITE_API_BASE_URL` to that
-origin and add the frontend origin to the backend's `CORS_ORIGINS`.
+origin and add the frontend origin to the backend's `CORS_ORIGINS`. Either way the
+value is normalised by `src/lib/env.js`: a base of `""`, `/api`,
+`https://host` and `https://host/api` all resolve to the same URL, so a trailing
+`/api` in the variable can never produce `/api/api/content`.
 
 ### Security rules for `.env`
 

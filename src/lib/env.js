@@ -122,10 +122,30 @@ function isLoopback(host) {
 const SITE_URL = resolveSiteUrl();
 const SITE_HOST = new URL(SITE_URL).host;
 
+/**
+ * Normalises VITE_API_BASE_URL into a PREFIX, never a full endpoint.
+ *
+ * Every endpoint passed to lib/api.js already starts with "/api/", so the base
+ * must contribute nothing beyond that. A value that repeats the prefix - the
+ * easy mistake of setting it to "/api" or "https://api.example.com/api" - used
+ * to produce "/api/api/content" and a 404 on every single request, with nothing
+ * in the app able to explain why. Stripping the trailing segment here means
+ * "", "/api", "https://api.example.com" and "https://api.example.com/api" all
+ * resolve to the same working URL.
+ */
+function normalizeApiBase(raw) {
+  const trimmed = String(raw || '').trim().replace(/\/+$/, '');
+  if (!trimmed) return '';
+  const withoutPrefix = trimmed.replace(/\/api$/i, '');
+  // Stripping must never consume the whole value: "/" and "/api" are both just
+  // "same origin", so hand back the empty prefix rather than a bare slash.
+  return withoutPrefix === '/' ? '' : withoutPrefix;
+}
+
 // Blank means "same origin", which is correct for a Vercel-hosted frontend
 // whose /api routes are rewritten to the backend, and for local dev where the
 // Vite proxy handles it.
-const API_BASE_URL = configured('VITE_API_BASE_URL').replace(/\/+$/, '');
+const API_BASE_URL = normalizeApiBase(configured('VITE_API_BASE_URL'));
 
 export const SITE_CONFIG = Object.freeze({
   /** Public origin of this frontend, e.g. "https://superui.in". */
