@@ -276,6 +276,9 @@ export default function ContactForm({ initialService = '', onSuccessCallback, is
             value={formData.name}
             onChange={handleChange}
             onBlur={handleBlur}
+            // Opening the dialog should land the caret in the first field, not
+            // on the close button.
+            {...(isModal ? { 'data-autofocus': 'true' } : {})}
             className={fieldClass(errors.name)}
           />
           {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}

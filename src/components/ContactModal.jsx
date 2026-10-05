@@ -8,23 +8,54 @@ export default function ContactModal({ isOpen, onClose, selectedService = '' }) 
   const modalRef = useRef(null);
   const content = useContent('contactmodal');
 
-  // Close on Escape key press & handle focus trap
+  // Close on Escape, trap Tab inside the dialog, restore focus on close.
   useEffect(() => {
     if (!isOpen) return;
+
+    const previouslyFocused = document.activeElement;
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         onClose();
+        return;
+      }
+
+      if (e.key !== 'Tab' || !modalRef.current) return;
+
+      const focusable = modalRef.current.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     // Prevent background scrolling while modal is open
     document.body.style.overflow = 'hidden';
+    // Move focus into the dialog so keyboard and screen-reader users are not
+    // left on the button that opened it, behind the backdrop.
+    const timer = window.setTimeout(() => {
+      const target = modalRef.current?.querySelector('[data-autofocus]') || modalRef.current;
+      target?.focus?.();
+    }, 0);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.clearTimeout(timer);
       document.body.style.overflow = 'unset';
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+        previouslyFocused.focus();
+      }
     };
   }, [isOpen, onClose]);
 
@@ -56,6 +87,7 @@ export default function ContactModal({ isOpen, onClose, selectedService = '' }) 
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-[#EDEDED] p-6 sm:p-8 z-10 my-auto overflow-hidden"
+            tabIndex={-1}
           >
             {/* Top Close Button */}
             <button

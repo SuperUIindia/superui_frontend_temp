@@ -56,8 +56,9 @@ export default function Home() {
         {/* Why SuperUI (4 trust cards) */}
         <WhyUs />
 
-        {/* Inline Contact Section */}
-        <ContactSection />
+        {/* Contact Section. It renders no form of its own: the button it shows
+            opens the single ContactModal below, so the form exists once. */}
+        <ContactSection onOpenContactModal={(service) => handleOpenModal(service)} />
 
         {/* Call to Action Band */}
         <CtaBand onOpenContactModal={() => handleOpenModal('')} />

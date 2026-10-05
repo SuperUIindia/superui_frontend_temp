@@ -1,6 +1,6 @@
 import React from 'react';
-import { Mail, Clock, MapPin, Sparkles, CheckCircle2 } from 'lucide-react';
-import ContactForm from './ContactForm';
+import { Mail, Clock, MapPin, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
+import Button from './Button';
 import Reveal from './Reveal';
 import { useContent } from '../lib/siteContent';
 import { safeUrl } from '../lib/sanitize';
@@ -9,7 +9,7 @@ import { safeUrl } from '../lib/sanitize';
 const POINT_ICONS = [Mail, Clock, MapPin];
 const POINT_ICONS_BG = ['bg-[#FFF1E8] text-[#FF5E00]', 'bg-[#F3EEFF] text-[#7C3AED]', 'bg-[#FFF1E8] text-[#FF5E00]'];
 
-export default function ContactSection() {
+export default function ContactSection({ onOpenContactModal }) {
   const content = useContent('contact');
   // hrefs are database-driven, so they are normalised before becoming anchors.
   const points = (Array.isArray(content.points) ? content.points : [])
@@ -96,15 +96,30 @@ export default function ContactSection() {
             )}
           </div>
 
-          {/* Right Column: Inline Contact Form */}
+          {/* Right Column: single entry point to the contact form.
+              The form itself lives in ContactModal so there is exactly one copy
+              on the page. Two forms meant a visitor who started filling one had
+              their input silently discarded by opening the other. */}
           <div className="lg:col-span-7">
             <Reveal delay={0.2}>
-              <div className="p-6 sm:p-10 rounded-3xl bg-white border border-[#EDEDED] shadow-xl shadow-black/[0.03]">
-                <div className="mb-6">
-                  <h3 className="text-xl font-bold text-[#111111]">{content.formCardTitle}</h3>
-                  <p className="text-xs text-[#6B6B6B] mt-1">{content.formCardSubtitle}</p>
-                </div>
-                <ContactForm />
+              <div className="p-6 sm:p-10 rounded-3xl bg-white border border-[#EDEDED] shadow-xl shadow-black/[0.03] flex flex-col items-center text-center">
+                <h3 className="text-xl font-bold text-[#111111]">{content.formCardTitle}</h3>
+                <p className="text-sm text-[#6B6B6B] mt-2 max-w-md">{content.formCardSubtitle}</p>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={() => onOpenContactModal && onOpenContactModal('')}
+                  icon={ArrowRight}
+                  className="mt-7 shadow-xl shadow-[#FF5E00]/25 w-full sm:w-auto"
+                >
+                  {content.formCardButton || 'Start Your Project'}
+                </Button>
+                <p className="text-xs text-[#6B6B6B] mt-4">
+                  Prefer email?{' '}
+                  <a href="mailto:hello.superui@gmail.com" className="font-semibold text-[#111111] hover:text-[#FF5E00] transition-colors">
+                    hello.superui@gmail.com
+                  </a>
+                </p>
               </div>
             </Reveal>
           </div>
