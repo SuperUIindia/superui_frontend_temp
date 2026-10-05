@@ -12,10 +12,9 @@ export default function Hero({ onOpenContactModal }) {
   const shouldReduceMotion = useReducedMotion();
   const content = useContent('hero');
 
-  // Splits the DB headline into words so each can be animated independently.
-  const headlineWords = String(content.headline || '')
-    .split(/\s+/)
-    .filter(Boolean);
+  // Split out only to keep the heading a single text node: animating per word
+  // made the sentence unreadable until the last word landed.
+  const headline = String(content.headline || '').trim();
 
   const trustPoints = Array.isArray(content.trustPoints) ? content.trustPoints : [];
 
@@ -27,31 +26,23 @@ export default function Hero({ onOpenContactModal }) {
     }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08,
-        delayChildren: 0.1
-      }
-    }
-  };
-
-  // Staggered fade-and-rise per word. Solid text colour rather than a
-  // bg-clip-text gradient: a clipped gradient can only be faded by the element
-  // that owns it, so the per-word fade below would have no effect, and the
-  // effect read as a distortion across the headline.
-  const wordVariants = {
+  // The headline arrives as one block: a short blur that resolves into focus
+  // while it rises. It is deliberately NOT a per-word stagger - words appearing
+  // one at a time made a sentence nobody can read until the last word landed,
+  // and the per-word clipping that effect needs is what previously clipped
+  // descenders off the line.
+  const headlineVariants = {
     hidden: {
       opacity: 0,
-      y: shouldReduceMotion ? 0 : 18
+      y: shouldReduceMotion ? 0 : 22,
+      filter: shouldReduceMotion ? 'blur(0px)' : 'blur(10px)'
     },
     visible: {
       opacity: 1,
       y: 0,
+      filter: 'blur(0px)',
       transition: {
-        duration: shouldReduceMotion ? 0.2 : 0.5,
+        duration: shouldReduceMotion ? 0.2 : 0.75,
         ease: [0.22, 1, 0.36, 1]
       }
     }
@@ -74,26 +65,22 @@ export default function Hero({ onOpenContactModal }) {
             {content.pillText}
           </motion.div>
 
-          {/* Word-by-word animated headline: plain black text, each word fading in and
-              rising in sequence. */}
+          {/* The headline resolves in as one block, so the sentence is readable
+              immediately instead of assembling word by word. */}
           <motion.h1
-            variants={containerVariants}
+            variants={headlineVariants}
             initial="hidden"
             animate="visible"
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-[#111111] tracking-tight leading-[1.15] pb-2 mb-6"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-[#111111] tracking-tight leading-[1.15] pb-2 mb-6 will-change-[transform,filter]"
           >
-            {headlineWords.map((word, index) => (
-              <motion.span key={index} variants={wordVariants} className="inline-block mr-[0.28em] last:mr-0">
-                {word}
-              </motion.span>
-            ))}
+            {headline}
           </motion.h1>
 
           {/* Subtext */}
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.6, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="text-lg sm:text-xl text-[#6B6B6B] max-w-2xl mx-auto leading-relaxed mb-10"
           >
             {content.subtext}
@@ -103,7 +90,7 @@ export default function Hero({ onOpenContactModal }) {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.6, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14"
           >
             <Button
@@ -131,7 +118,7 @@ export default function Hero({ onOpenContactModal }) {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.7, delay: 0.9 }}
+              transition={{ duration: 0.7, delay: 0.8 }}
               className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs sm:text-sm font-medium text-[#6B6B6B] pt-4 border-t border-[#EDEDED]/80 max-w-2xl mx-auto"
             >
               {trustPoints.map((point, index) => {

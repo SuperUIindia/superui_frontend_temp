@@ -9,12 +9,36 @@ import Button from './Button';
 const DISMISS_KEY = 'superui:popup-dismissed';
 const POLL_MS = 60000;
 
-/** One dismiss entry per popup id, so a new offer can still show up. */
-function dismissedIds() {
+/**
+ * How long a dismissed popup stays hidden.
+ *
+ * Was sessionStorage, which is thrown away the moment the tab closes, so the
+ * poster reappeared on every single page load and refresh. localStorage
+ * survives the tab, so one dismissal keeps the poster away for a week instead.
+ */
+const REOPEN_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Ids of the popups this visitor has already dismissed and that have not yet
+ * aged out.
+ *
+ * Entries are `{ id, at }` rather than bare ids because the cool-down has to be
+ * measured from the moment of dismissal. Expired entries are pruned on read as
+ * well as on write, so the stored list cannot grow without bound.
+ */
+function hiddenIds() {
   try {
-    const raw = sessionStorage.getItem(DISMISS_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    const parsed = JSON.parse(localStorage.getItem(DISMISS_KEY) || '[]');
+    if (!Array.isArray(parsed)) return [];
+
+    const now = Date.now();
+    const live = parsed.filter(
+      (entry) => entry && typeof entry === 'object' && now - entry.at < REOPEN_AFTER_MS
+    );
+    if (live.length !== parsed.length) {
+      localStorage.setItem(DISMISS_KEY, JSON.stringify(live));
+    }
+    return live.map((entry) => entry.id).filter(Boolean);
   } catch {
     return [];
   }
@@ -22,8 +46,12 @@ function dismissedIds() {
 
 function rememberDismissed(id) {
   try {
-    const next = [...new Set([...dismissedIds(), id])].slice(-20);
-    sessionStorage.setItem(DISMISS_KEY, JSON.stringify(next));
+    const stored = JSON.parse(localStorage.getItem(DISMISS_KEY) || '[]');
+    const kept = Array.isArray(stored) ? stored.filter((entry) => entry && entry.id !== id) : [];
+    localStorage.setItem(
+      DISMISS_KEY,
+      JSON.stringify([...kept, { id, at: Date.now() }].slice(-20))
+    );
   } catch {
     /* storage unavailable (private mode) - popup simply reappears */
   }
@@ -52,7 +80,7 @@ export default function OfferPopup({ onOpenContact }) {
     try {
       const res = await api.get('/api/popups');
       const list = (res && res.data && res.data.popups) || [];
-      const hidden = dismissedIds();
+      const hidden = hiddenIds();
       const next = list.find((p) => !hidden.includes(p._id) && !isExpired(p)) || null;
       setPopup((current) => (current && isExpired(current) ? null : next));
       setLoadedAt(new Date().toISOString());
