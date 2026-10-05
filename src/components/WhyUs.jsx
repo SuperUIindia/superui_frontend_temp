@@ -28,11 +28,12 @@ export default function WhyUs() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#111111] tracking-tight mb-4">
-              {content.sectionTitle}{' '}
-              <span className="bg-gradient-to-r from-[#FF5E00] to-[#7C3AED] bg-clip-text text-transparent">
-                {content.sectionHighlight}
-              </span>
+            {/* Solid #111111 rather than a bg-clip-text gradient: that gradient
+                only paints inside the element padding box, so descenders (the
+                tail of the 'y' in "ambitious teams") fell outside it and rendered
+                invisible against text-transparent. */}
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#111111] tracking-tight leading-[1.15] pb-1 mb-4">
+              {content.sectionTitle} {content.sectionHighlight}
             </h2>
           </Reveal>
 

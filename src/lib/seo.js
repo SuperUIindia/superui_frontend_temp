@@ -115,7 +115,9 @@ export function applySeoContent(seo) {
     setMeta('name', 'geo.region', BUSINESS_CONFIG.regionCode);
   }
   if (BUSINESS_CONFIG.city) {
-    setMeta('name', 'geo.placename', `${BUSINESS_CONFIG.city}, ${BUSINESS_CONFIG.countryName || ''}`.replace(/,\s*$/, ''));
+    // cityName() strips any region/country a hand-edited .env appended, so this
+    // renders "Warangal, India" rather than "Warangal, Telangana, India., India".
+    setMeta('name', 'geo.placename', `${cityName()}, ${BUSINESS_CONFIG.countryName || ''}`.replace(/,\s*$/, ''));
   }
   if (BUSINESS_CONFIG.latitude && BUSINESS_CONFIG.longitude) {
     setMeta('name', 'geo.position', `${BUSINESS_CONFIG.latitude};${BUSINESS_CONFIG.longitude}`);
@@ -136,12 +138,26 @@ const ID = {
   breadcrumb: `${SITE_URL}/#breadcrumb`
 };
 
+/**
+ * Bare city name.
+ *
+ * VITE_BUSINESS_CITY is meant to hold only the city, but a hand-edited .env can
+ * easily carry "Warangal, Telangana, India." instead. Schema.org
+ * addressLocality and the geo.placename meta tag both require a single locality,
+ * so the extra commas are stripped rather than emitted verbatim.
+ */
+function cityName() {
+  if (!BUSINESS_CONFIG.city) return '';
+  return BUSINESS_CONFIG.city.split(',')[0].trim().replace(/\.$/, '');
+}
+
 function postalAddress() {
   if (!BUSINESS_CONFIG.city && !BUSINESS_CONFIG.country) return undefined;
   return {
     '@type': 'PostalAddress',
     streetAddress: undefined,
-    addressLocality: BUSINESS_CONFIG.city || undefined,
+    // Bare city name: addressLocality must not carry the region or country.
+    addressLocality: cityName() || undefined,
     addressRegion: BUSINESS_CONFIG.region || undefined,
     addressCountry: BUSINESS_CONFIG.regionCode || BUSINESS_CONFIG.country || undefined,
     postalCode: BUSINESS_CONFIG.postalCode || undefined

@@ -24,6 +24,26 @@ const env = import.meta.env;
 /** Collected so a misconfigured build can be reported once, after start-up. */
 const missingInBuild = [];
 
+/**
+ * Variables whose absence is expected and must never be reported.
+ *
+ * GSC verification only accepts the token Search Console issued for the
+ * property, so there is nothing meaningful to pre-fill; the social links are
+ * hidden when blank by design. Warning about these taught nothing and trained
+ * the reader to ignore real warnings.
+ */
+const SILENT_WHEN_ABSENT = new Set([
+  'VITE_GSC_VERIFICATION',
+  'VITE_INSTAGRAM_URL',
+  'VITE_INSTAGRAM_HANDLE',
+  'VITE_FACEBOOK_URL',
+  'VITE_LINKEDIN_URL',
+  'VITE_AREAS_SERVED',
+  'VITE_CONTACT_EMAIL',
+  'VITE_CONTACT_PHONE',
+  'VITE_SITE_KEYWORDS'
+]);
+
 function optional(name, fallback = '') {
   const value = env[name];
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
@@ -35,7 +55,7 @@ function optional(name, fallback = '') {
  */
 function configured(name, fallback = '') {
   const value = optional(name);
-  if (!value) missingInBuild.push(name);
+  if (!value && !SILENT_WHEN_ABSENT.has(name)) missingInBuild.push(name);
   return value || fallback;
 }
 
@@ -66,8 +86,6 @@ function resolveSiteUrl() {
           'ignoring it and using the origin the page was served from.'
       );
     }
-  } else {
-    missingInBuild.push('VITE_SITE_URL');
   }
 
   const origin = typeof window !== 'undefined' ? window.location?.origin : '';
@@ -159,9 +177,11 @@ export const BUSINESS_CONFIG = Object.freeze({
 });
 
 /**
- * Reports a build that shipped without its env file. Never throws and never
- * changes behaviour - the values above are already usable fallbacks. This exists
- * so the gap is visible instead of silent.
+ * Reports a build that shipped without the values it needs. Never throws and
+ * never changes behaviour - the values above are already usable fallbacks. This
+ * exists so a misconfigured build is visible instead of silent.
+ *
+ * Only variables that change output are listed (see SILENT_WHEN_ABSENT).
  */
 export function warnAboutMissingEnv() {
   if (!missingInBuild.length) return;

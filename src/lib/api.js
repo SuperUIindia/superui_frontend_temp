@@ -92,7 +92,19 @@ export async function request(endpoint, options = {}) {
       timeoutError.status = 0;
       throw timeoutError;
     }
-    throw new Error('Could not reach the server. Please try again.');
+    // Name the real cause: a bare "could not reach the server" sent people
+    // looking at the wrong box when the actual problem was CORS, an offline
+    // dev server or a bad VITE_API_BASE_URL.
+    const reason =
+      err && err.name === 'TypeError'
+        ? 'the request was blocked by CORS, the API is offline, or VITE_API_BASE_URL is wrong'
+        : err && err.message
+          ? err.message
+          : 'unknown network error';
+    const networkError = new Error(`Could not reach ${url}. (${reason})`);
+    networkError.status = 0;
+    networkError.cause = err;
+    throw networkError;
   } finally {
     clearTimeout(timeoutId);
   }
