@@ -38,15 +38,17 @@ export default function Hero({ onOpenContactModal }) {
     }
   };
 
-  // The headline is filled by a background gradient clipped to the text, which
-  // the parent paints. Per-word opacity would fade an invisible span - the
-  // glyphs are the parent's background - so the words rise into place instead,
-  // and the heading as a whole fades in through the container variant.
+  // Staggered fade-and-rise per word. Solid text colour rather than a
+  // bg-clip-text gradient: a clipped gradient can only be faded by the element
+  // that owns it, so the per-word fade below would have no effect, and the
+  // effect read as a distortion across the headline.
   const wordVariants = {
     hidden: {
+      opacity: 0,
       y: shouldReduceMotion ? 0 : 18
     },
     visible: {
+      opacity: 1,
       y: 0,
       transition: {
         duration: shouldReduceMotion ? 0.2 : 0.5,
@@ -72,19 +74,13 @@ export default function Hero({ onOpenContactModal }) {
             {content.pillText}
           </motion.div>
 
-          {/* Word-by-word animated headline. The vertical gradient (black at the top,
-              full brand orange through the middle, black again at the bottom)
-              is painted on the block-level <h1> rather than on each word: a
-              bg-clip-text gradient only fills the padding box it is applied to,
-              and an inline-block word box does not reach the descenders, so
-              "gypq"-style tails used to render invisible against
-              text-transparent. The heading box covers every line and its
-              descenders, so the whole headline is painted. */}
+          {/* Word-by-word animated headline: plain black text, each word fading in and
+              rising in sequence. */}
           <motion.h1
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.15] pb-3 mb-6 bg-gradient-to-b from-[#111111] via-[#FF5E00] to-[#111111] bg-clip-text text-transparent"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-[#111111] tracking-tight leading-[1.15] pb-2 mb-6"
           >
             {headlineWords.map((word, index) => (
               <motion.span key={index} variants={wordVariants} className="inline-block mr-[0.28em] last:mr-0">

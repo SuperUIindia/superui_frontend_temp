@@ -55,7 +55,12 @@ cp .env.example .env     # then fill in the values
 npm run dev              # http://localhost:5173
 ```
 
-`.env` is git-ignored. Only `.env.example` is committed.
+`.env` is git-ignored, so it is never shared. Two env files are committed:
+`.env.example` (the template) and `.env.production` (the public production
+values). `.env.production` is safe to commit because every `VITE_*` value is
+inlined into the public JavaScript bundle by definition — it holds brand, SEO
+and GEO values only, never a secret. Without it a fresh Vercel clone builds with
+fallback defaults and the start-up warning reports every value the build lacked.
 
 ## Scripts
 
@@ -71,8 +76,9 @@ Every runtime value comes from a `VITE_*` variable or a fallback defined in one
 place — `src/lib/env.js` is the only module that touches `import.meta.env`.
 
 **No variable is required for the app to run.** `.env` is git-ignored, so a fresh
-clone or a CI build has no env file at all. The fallbacks are chosen so a
-missing value degrades rather than breaks:
+clone or a CI build falls back to `.env.production` (committed public values)
+and then to the defaults below. The fallbacks are chosen so a missing value
+degrades rather than breaks:
 
 | Missing value | Falls back to |
 | --- | --- |
@@ -88,9 +94,12 @@ silent.
 
 ### Setting variables on Vercel
 
-`.env` is never deployed. Add values under
-**Vercel → Project → Settings → Environment Variables** for Production,
-Preview and Development as needed. Set at least:
+`.env` is never deployed, and `.env.production` already supplies the values below.
+Set a Vercel variable only to **override** it —
+**Vercel → Project → Settings → Environment Variables** for Production, Preview
+and Development as needed. Variables set in Vercel take precedence over
+`.env.production`, and `.env.production` takes precedence over the fallbacks in
+`src/lib/env.js`. The usual reason to override is `VITE_API_BASE_URL`:
 
 | Variable | Why it matters |
 | --- | --- |

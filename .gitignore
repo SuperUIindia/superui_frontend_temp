@@ -23,10 +23,16 @@ build/
 .vite/
 *.local
 
-# --- Environment files (NEVER COMMIT) --------------------------------------
+# --- Environment files -------------------------------------------------------
+# .env (local development) and .env.local etc. are NEVER committed.
 .env
 .env.*
 !.env.example
+# .env.production IS committed: it holds only PUBLIC values, every VITE_* one of
+# which is inlined into the public bundle by definition, so there is no secret
+# in it to leak. Without it a fresh Vercel clone builds with default brand, SEO
+# and GEO values. Never add ADMIN_* / JWT_SECRET / API keys to it.
+!.env.production
 
 # --- Logs ------------------------------------------------------------------
 logs/
