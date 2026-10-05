@@ -21,9 +21,31 @@ is a separate service and is not part of this repository.
 
 ## Requirements
 
-- Node.js **>= 20.19**
+- Node.js **24.x** (see [Node version](#node-version) below)
 - npm 10+
 - The backend API reachable (see `VITE_API_BASE_URL` below)
+
+### Node version
+
+Node 24 is pinned in two places that must agree:
+
+- `package.json` → `"engines": { "node": "24.x" }`
+- `.nvmrc` → `24`
+
+`24.x` is a deliberately bounded range. Vite 8 itself accepts a wider set
+(`^20.19.0 || >=22.12.0`), but an open-ended range such as `>=20.19.0` lets the
+hosting provider silently move the build to a new major release the moment one
+ships — which can break a build that was never tested against it. Bounding the
+major means patch and minor updates still land automatically, but a major bump
+becomes a deliberate, reviewable change.
+
+Locally, use whichever of these matches:
+
+```bash
+nvm use            # reads .nvmrc
+# or
+node --version     # expect v24.x
+```
 
 ## Getting started
 
@@ -142,4 +164,5 @@ fallback for Netlify. Replicate the `headers` block from `vercel.json` by hand �
 
 The build needs `VITE_SITE_URL`, `VITE_DEFAULT_TITLE` and
 `VITE_DEFAULT_DESCRIPTION` in the host's environment; `src/lib/env.js` throws
-without them rather than silently building a page with the wrong origin.
+without them rather than silently building a page with the wrong origin. Set the
+host's Node version to 24 to match `.nvmrc`.
