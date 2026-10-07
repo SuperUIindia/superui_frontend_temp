@@ -60,7 +60,7 @@ export default function ContactForm({
       else if (value.trim().length < 2) error = 'Name must be at least 2 characters';
       else if (value.trim().length > 80) error = 'Name cannot exceed 80 characters';
     } else if (name === 'email') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
       if (!value.trim()) error = 'Email is required';
       else if (!emailRegex.test(value.trim())) error = 'Please provide a valid email address';
     } else if (name === 'phone') {
@@ -318,7 +318,13 @@ export default function ContactForm({
           <label htmlFor={fieldId('description')} className="block text-xs font-semibold text-[#111111]">
             {f.description?.label} <span className="text-[#FF5E00]">*</span>
           </label>
-          <span className="text-[11px] text-[#6B6B6B]">
+          <span className={`text-[11px] ${
+              formData.description.length > 1800
+                ? 'text-red-500 font-bold'
+                : formData.description.length > 1500
+                  ? 'text-orange-500 font-semibold'
+                  : 'text-[#6B6B6B]'
+            }`}>
             {formData.description.length} / 2000 chars (min 10)
           </span>
         </div>

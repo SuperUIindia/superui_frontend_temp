@@ -50,6 +50,11 @@ export default function App() {
                     one leads collection. */}
                 <Route path="/enquiryform" element={<EnquiryForm />} />
 
+                {/* Legacy contact-form URL. Serves the same enquiry form so a
+                    visitor reaching /lead/contactform is not silently dropped
+                    onto the home page by the catch-all below. */}
+                <Route path="/lead/contactform" element={<EnquiryForm />} />
+
                 {/* Admin Login */}
                 <Route path="/admin/login" element={<Login />} />
 

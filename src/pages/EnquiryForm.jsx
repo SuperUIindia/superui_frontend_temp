@@ -22,7 +22,7 @@ export default function EnquiryForm() {
   const content = useContent('contact');
 
   useEffect(() => {
-    trackVisit('/enquiryform');
+    trackVisit();
   }, []);
 
   // The navbar CTA has no dialog to open on this page, so it scrolls to the form.

@@ -25,7 +25,12 @@ import {
   Layers,
   ArrowUpRight,
   Image as ImageIcon,
-  LayoutTemplate
+  LayoutTemplate,
+  Monitor,
+  Smartphone,
+  Tablet,
+  MapPin,
+  Send
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -268,6 +273,12 @@ export default function Dashboard() {
   const [clicksData, setClicksData] = useState([]);
   const [loadingClicks, setLoadingClicks] = useState(false);
 
+  // Test Email State
+  const [testEmailTo, setTestEmailTo] = useState('');
+  const [testEmailSubject, setTestEmailSubject] = useState('Test Email from Admin Dashboard');
+  const [sendingTestEmail, setSendingTestEmail] = useState(false);
+  const [testEmailResult, setTestEmailResult] = useState(null);
+
   // Bulk Selection State (leads + visitors)
   const [selectedLeads, setSelectedLeads] = useState([]);
   const [selectedVisitors, setSelectedVisitors] = useState([]);
@@ -435,7 +446,6 @@ export default function Dashboard() {
       if (res && res.data) {
         setSelectedLead(res.data);
         setSaveSuccess(true);
-        // Refresh leads list
         fetchLeads();
         setTimeout(() => setSaveSuccess(false), 2500);
       }
@@ -444,6 +454,30 @@ export default function Dashboard() {
       toast.error(err.message || 'Failed to update lead.');
     } finally {
       setSavingLead(false);
+    }
+  };
+
+  const handleSendTestEmail = async () => {
+    setSendingTestEmail(true);
+    setTestEmailResult(null);
+    try {
+      const res = await api.post('/api/admin/test-email', {
+        to: testEmailTo,
+        subject: testEmailSubject
+      });
+      if (res && res.data && res.data.success) {
+        setTestEmailResult({ success: true, message: res.data.message });
+        toast.success(res.data.message);
+      } else {
+        setTestEmailResult({ success: false, message: res.data?.message || 'Failed to send test email' });
+        toast.error(res.data?.message || 'Failed to send test email');
+      }
+    } catch (err) {
+      const msg = err.message || 'Failed to send test email';
+      setTestEmailResult({ success: false, message: msg });
+      toast.error(msg);
+    } finally {
+      setSendingTestEmail(false);
     }
   };
 
@@ -777,6 +811,79 @@ export default function Dashboard() {
                   Service interactions
                 </div>
               </div>
+            </div>
+
+            {/* Device Breakdown */}
+            {stats && stats.deviceBreakdown && stats.deviceBreakdown.length > 0 && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#EDEDED] shadow-sm">
+                <h3 className="text-sm font-bold text-[#111111] mb-3">Visitor Devices</h3>
+                <div className="flex flex-wrap gap-2">
+                  {stats.deviceBreakdown.map((d) => {
+                    const icon = d.device === 'Phone' ? Smartphone : d.device === 'Tablet' ? Tablet : d.device === 'Laptop' ? Monitor : Activity;
+                    const IconComp = icon;
+                    return (
+                      <span key={d.device} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FAFAFA] border border-[#EDEDED] text-xs font-semibold text-[#111111]">
+                        <IconComp className="w-3.5 h-3.5 text-[#FF5E00]" />
+                        {d.device}: {d.count}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Area Breakdown */}
+            {stats && stats.areaBreakdown && stats.areaBreakdown.length > 0 && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#EDEDED] shadow-sm">
+                <h3 className="text-sm font-bold text-[#111111] mb-3">Top Areas</h3>
+                <div className="flex flex-wrap gap-2">
+                  {stats.areaBreakdown.map((a) => (
+                    <span key={a.area} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FAFAFA] border border-[#EDEDED] text-xs font-semibold text-[#111111]">
+                      <MapPin className="w-3.5 h-3.5 text-[#7C3AED]" />
+                      {a.area}: {a.count}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Test Email Section */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#EDEDED] shadow-sm">
+              <h3 className="text-sm font-bold text-[#111111] mb-1">Test Email Configuration</h3>
+              <p className="text-xs text-[#6B6B6B] mb-3">Send a test email to verify your SMTP setup is working.</p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="email"
+                  placeholder="recipient@example.com"
+                  value={testEmailTo}
+                  onChange={(e) => setTestEmailTo(e.target.value)}
+                  className="flex-1 px-3.5 py-2 text-xs rounded-xl border border-[#EDEDED] bg-white text-[#111111] placeholder:text-[#A1A1AA] focus:border-[#FF5E00] focus:outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Subject"
+                  value={testEmailSubject}
+                  onChange={(e) => setTestEmailSubject(e.target.value)}
+                  className="flex-1 px-3.5 py-2 text-xs rounded-xl border border-[#EDEDED] bg-white text-[#111111] placeholder:text-[#A1A1AA] focus:border-[#FF5E00] focus:outline-none"
+                />
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={sendingTestEmail}
+                  onClick={handleSendTestEmail}
+                  icon={Send}
+                  disabled={!testEmailTo.trim()}
+                  className="shrink-0"
+                >
+                  Send Test
+                </Button>
+              </div>
+              {testEmailResult && (
+                <div className={`mt-2 p-2.5 rounded-xl text-xs flex items-center gap-2 ${testEmailResult.success ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+                  {testEmailResult.success ? <Check className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                  {testEmailResult.message}
+                </div>
+              )}
             </div>
 
             {/* Charts Section */}
@@ -1300,12 +1407,19 @@ aria-label="Next page"
                   Visitor Session Logs
                 </h3>
                 <p className="text-xs text-[#6B6B6B]">
-                  Privacy-preserving telemetry with salted SHA-256 IP hashing and lead conversion tracking
+                  Privacy-preserving telemetry with salted SHA-256 IP hashing, area detection and lead conversion tracking
                 </p>
               </div>
-              <span className="px-3 py-1 rounded-full bg-[#FAFAFA] border border-[#EDEDED] text-xs font-semibold text-[#6B6B6B]">
-                {visitorsTotal} Recorded Sessions
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-[#FAFAFA] border border-[#EDEDED] text-xs font-semibold text-[#6B6B6B]">
+                  {visitorsTotal} Sessions
+                </span>
+                {stats && stats.deviceBreakdown && stats.deviceBreakdown.length > 0 && (
+                  <span className="px-3 py-1 rounded-full bg-[#FFF1E8] border border-[#FF5E00]/20 text-xs font-semibold text-[#FF5E00]">
+                    {stats.deviceBreakdown.reduce((s, d) => s + d.count, 0)} tracked
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="rounded-2xl bg-white border border-[#EDEDED] shadow-sm overflow-hidden">
@@ -1331,6 +1445,8 @@ aria-label="Next page"
                       <th className="py-3 px-4">Timestamp</th>
                       <th className="py-3 px-4">Visitor ID</th>
                       <th className="py-3 px-4">Device</th>
+                      <th className="py-3 px-4">Model</th>
+                      <th className="py-3 px-4">Area</th>
                       <th className="py-3 px-4">Browser</th>
                       <th className="py-3 px-4">Path</th>
                       <th className="py-3 px-4">Referrer</th>
@@ -1338,20 +1454,20 @@ aria-label="Next page"
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#EDEDED]">
-                    {loadingVisitors ? (
-                      <tr>
-                        <td colSpan={8} className="py-12 text-center text-[#6B6B6B]">
-                          <div className="inline-block w-5 h-5 border-2 border-[#FF5E00] border-t-transparent rounded-full animate-spin mb-2" />
-                          <p>Loading visitor telemetry...</p>
-                        </td>
-                      </tr>
-                    ) : visitors.length === 0 ? (
-                      <tr>
-                        <td colSpan={8} className="py-12 text-center text-[#6B6B6B]">
-                          No visitor sessions logged yet.
-                        </td>
-                      </tr>
-                    ) : (
+                     {loadingVisitors ? (
+                       <tr>
+                         <td colSpan={10} className="py-12 text-center text-[#6B6B6B]">
+                           <div className="inline-block w-5 h-5 border-2 border-[#FF5E00] border-t-transparent rounded-full animate-spin mb-2" />
+                           <p>Loading visitor telemetry...</p>
+                         </td>
+                       </tr>
+                     ) : visitors.length === 0 ? (
+                       <tr>
+                         <td colSpan={10} className="py-12 text-center text-[#6B6B6B]">
+                           No visitor sessions logged yet.
+                         </td>
+                       </tr>
+                     ) : (
                       visitors.map((v) => (
                         <tr key={v._id} className="hover:bg-[#FAFAFA]">
                           <SelectCell
@@ -1365,6 +1481,17 @@ aria-label="Next page"
                           <td className="py-3 px-4 font-mono text-[#111111]">{v.shortVisitorId}&hellip;</td>
                           <td className="py-3 px-4 font-medium text-[#111111]">
                             {v.device}
+                          </td>
+                          <td className="py-3 px-4 text-[#6B6B6B]">
+                            {v.deviceModel || (
+                              <span className="text-[#A1A1AA]">N/A</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="inline-flex items-center gap-1 text-[#111111]">
+                              <MapPin className="w-3 h-3 text-[#7C3AED]" />
+                              {v.area}
+                            </span>
                           </td>
                           <td className="py-3 px-4 text-[#6B6B6B]">
                             {v.browser}
