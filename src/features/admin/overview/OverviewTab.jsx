@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   TrendingUp,
   Activity,
@@ -28,26 +28,32 @@ import { api } from '../../../lib/api';
 import Button from '../../../components/Button';
 
 function CountUp({ target = 0 }) {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(target);
+  const prevTarget = useRef(target);
 
   useEffect(() => {
-    let start = 0;
+    // On a refresh the target changes. Animate from the previous value rather
+    // than resetting to 0, so the cards never blank out between fetches.
+    const start = prevTarget.current;
     const end = parseInt(target, 10) || 0;
-    if (end === 0) {
-      setCount(0);
-      return;
-    }
+    prevTarget.current = end;
+
+    if (end === start) return;
+
     const duration = 900;
     const incrementTime = 25;
-    const step = Math.ceil(end / (duration / incrementTime));
+    const steps = Math.max(1, Math.ceil(duration / incrementTime));
+    const delta = end - start;
+    const step = delta / steps;
 
+    let current = start;
     const timer = setInterval(() => {
-      start += step;
-      if (start >= end) {
+      current += step;
+      if ((delta > 0 && current >= end) || (delta < 0 && current <= end)) {
         setCount(end);
         clearInterval(timer);
       } else {
-        setCount(start);
+        setCount(Math.round(current));
       }
     }, incrementTime);
 

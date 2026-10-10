@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useServices } from '../../lib/services';
@@ -90,8 +90,11 @@ export default function Dashboard() {
   }, []);
 
   // Fetch Overview Stats
-  const fetchStats = useCallback(async () => {
-    setLoadingStats(true);
+  const fetchStats = useCallback(async ({ silent = false } = {}) => {
+    // On a refresh, keep the previous numbers visible instead of blanking them.
+    // Only the initial load shows "-"; a later refresh just re-animates the
+    // CountUp components in place so the dashboard never goes empty.
+    if (!silent) setLoadingStats(true);
     try {
       const res = await api.get('/api/admin/stats');
       if (res?.data) {
@@ -101,7 +104,7 @@ export default function Dashboard() {
       logError('load stats', err);
       toast.error('Could not load analytics. Check that the API is reachable.');
     } finally {
-      setLoadingStats(false);
+      if (!silent) setLoadingStats(false);
     }
   }, [toast]);
 
@@ -167,7 +170,16 @@ export default function Dashboard() {
     }
   }, [toast]);
 
-  // Trigger data loads on tab change
+  // Trigger data loads on tab change.
+  //
+  // `stats` is deliberately NOT in the dependency array. Including it made the
+  // effect re-run every time the fetch returned a new object reference, which
+  // re-triggered the fetch and produced an infinite load → render → load loop
+  // that made the whole overview tab blink forever. Tab changes are the only
+  // legitimate trigger; a manual refresh goes through handleRefresh instead.
+  const statsRef = useRef(stats);
+  statsRef.current = stats;
+
   useEffect(() => {
     if (activeTab === 'overview') {
       fetchStats();
@@ -175,11 +187,12 @@ export default function Dashboard() {
       fetchLeads();
     } else if (activeTab === 'visitors') {
       fetchVisitors();
-      if (!stats) fetchStats();
+      if (!statsRef.current) fetchStats();
     } else if (activeTab === 'clicks') {
       fetchClicks();
     }
-  }, [activeTab, fetchStats, fetchLeads, fetchVisitors, fetchClicks, stats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, fetchStats, fetchLeads, fetchVisitors, fetchClicks]);
 
   // Refresh All
   const handleRefresh = async () => {
