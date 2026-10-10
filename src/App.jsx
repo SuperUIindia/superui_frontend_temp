@@ -56,10 +56,12 @@ export default function App() {
                     one version of this page (not a duplicate). */}
                 <Route path="/lead/contactform" element={<Navigate to="/enquiryform" replace />} />
 
-                {/* Admin Login */}
+                {/* Admin Login — accessible at both /admin/login and /login */}
                 <Route path="/admin/login" element={<Login />} />
+                <Route path="/login" element={<Login />} />
 
-                {/* Protected Admin Dashboard */}
+                {/* Redirect bare /admin to the login screen for unauthenticated users.
+                    Authenticated users are redirected to the dashboard by ProtectedRoute. */}
                 <Route
                   path="/admin"
                   element={
