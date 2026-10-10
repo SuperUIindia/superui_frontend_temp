@@ -1,5 +1,30 @@
+import fs from 'fs';
+import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+
+/**
+ * Copies dist/index.html to dist/404.html on production builds.
+ * This guarantees that static SPA hosts like Cloudflare Pages, GitHub Pages,
+ * and standard CDNs serve the React app on direct route requests (e.g. /enquiry).
+ */
+function spaFallbackPlugin() {
+  return {
+    name: 'spa-fallback',
+    closeBundle() {
+      const distDir = path.resolve(process.cwd(), 'dist');
+      const indexPath = path.join(distDir, 'index.html');
+      const notFoundPath = path.join(distDir, '404.html');
+      try {
+        if (fs.existsSync(indexPath)) {
+          fs.copyFileSync(indexPath, notFoundPath);
+        }
+      } catch (err) {
+        // Build environment may not have write permissions or dist may vary
+      }
+    }
+  };
+}
 
 /**
  * Dev/preview server and production build configuration.
@@ -30,7 +55,7 @@ export default defineConfig(({ mode, command }) => {
   const devHost = (env.VITE_DEV_HOST || 'localhost').trim() || 'localhost';
 
   return {
-    plugins: [react()],
+    plugins: [react(), spaFallbackPlugin()],
     server: {
       port,
       strictPort: true,
