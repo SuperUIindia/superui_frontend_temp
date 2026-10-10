@@ -42,7 +42,27 @@ const SILENT_WHEN_ABSENT = new Set([
   'VITE_CONTACT_EMAIL',
   'VITE_CONTACT_PHONE',
   'VITE_SITE_KEYWORDS',
-  'VITE_API_BASE_URL'
+  'VITE_API_BASE_URL',
+  // All remaining VITE_* variables are MongoDB-driven: the site copy, SEO
+  // metadata, branding, business coordinates and theme colour are edited from
+  // the admin dashboard's "All Sections" tab. Each has a safe fallback in this
+  // file, so warning about their absence in a build teaches nothing.
+  'VITE_SITE_NAME',
+  'VITE_SITE_ALT_NAME',
+  'VITE_SITE_LOCALE',
+  'VITE_LOGO_PATH',
+  'VITE_THEME_COLOR',
+  'VITE_DEFAULT_TITLE',
+  'VITE_DEFAULT_DESCRIPTION',
+  'VITE_OG_IMAGE',
+  'VITE_BUSINESS_CITY',
+  'VITE_BUSINESS_REGION',
+  'VITE_BUSINESS_REGION_CODE',
+  'VITE_BUSINESS_COUNTRY',
+  'VITE_BUSINESS_COUNTRY_NAME',
+  'VITE_BUSINESS_POSTAL_CODE',
+  'VITE_BUSINESS_LATITUDE',
+  'VITE_BUSINESS_LONGITUDE'
 ]);
 
 function optional(name, fallback = '') {
