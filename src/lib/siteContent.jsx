@@ -267,7 +267,7 @@ const FALLBACKS = {
     description:
       'SuperUI is a full-stack web development and UI/UX design studio in Warangal, Telangana, India. We build fast, secure, SEO-optimised websites, e-commerce stores and custom web applications. Get a fixed-price proposal within 24 hours.',
     keywords:
-      'web development company Warangal, custom web application development, UI UX design services India, ecommerce website development, React and Next.js developers, website maintenance and SEO services, SuperUI, SuperUI',
+      'web development company Warangal, UI UX design services India, custom web application development, ecommerce website development, React Next.js developers India, website maintenance SEO services, admin dashboard development, SuperUI, SuperUI Warangal',
     author: 'SuperUI',
     robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
     ogType: 'website',
@@ -276,9 +276,9 @@ const FALLBACKS = {
     ogLocale: 'en_IN',
     ogTitle: 'SuperUI — Web Development, UI/UX Design & Custom Software Studio',
     ogDescription:
-      'A full-stack engineering and design studio in Warangal delivering high-speed web apps, e-commerce stores, custom software and conversion-optimised websites.',
+      'A full-stack engineering and design studio in Warangal, Telangana delivering high-speed web apps, e-commerce stores, custom software and conversion-optimised websites.',
     ogImage: 'https://superui.in/superui_logo.png',
-    ogImageAlt: 'SuperUI logo',
+    ogImageAlt: 'SuperUI — Web Development & UI/UX Design Studio logo',
     twitterCard: 'summary_large_image'
   }
 };

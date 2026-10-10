@@ -90,5 +90,6 @@ indexed.
 ## Pages
 
 - [Home](/): services, process, trust signals and the project inquiry form
+- [Enquiry Form](/enquiryform): standalone project inquiry form — submit requirements directly
 - [Sitemap](/sitemap.xml)
 - [llms.txt](/llms.txt): this file

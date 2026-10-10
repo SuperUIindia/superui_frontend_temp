@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <!--
+    Image sitemap for https://superui.in
+    Updated: 2026-10-10
+    Only canonical, indexable URLs with associated images.
+  -->
   <url>
     <loc>https://superui.in/</loc>
     <image:image>
       <image:loc>https://superui.in/superui_logo.png</image:loc>
-      <image:title>SuperUI logo</image:title>
+      <image:title>SuperUI — Web Development &amp; UI/UX Design Studio logo</image:title>
+      <image:caption>SuperUI is a full-stack web development and UI/UX design studio in Warangal, Telangana, India.</image:caption>
     </image:image>
   </url>
 </urlset>

@@ -25,6 +25,54 @@ export default function EnquiryForm() {
     trackVisit();
   }, []);
 
+  // Inject page-specific SEO metadata.
+  // The SeoSync component in App.jsx only handles the homepage seo section.
+  // This effect sets unique metadata for /enquiryform so it is not treated
+  // as a duplicate of the homepage by search engines.
+  useEffect(() => {
+    const prevTitle = document.title;
+
+    // Unique page title
+    document.title = 'Start a Project — Enquiry Form | SuperUI';
+
+    // Unique meta description
+    const setMeta = (attr, key, value) => {
+      let el = document.head.querySelector(`meta[${attr}="${key}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, key);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', value);
+    };
+
+    setMeta('name', 'description',
+      'Submit your web development or UI/UX design requirements to SuperUI. Our engineering team responds within 24 business hours with a transparent, fixed-price proposal.'
+    );
+
+    // Canonical URL specific to this page
+    let canonical = document.head.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', 'https://superui.in/enquiryform');
+
+    // Open Graph for this page
+    setMeta('property', 'og:title', 'Start a Project — Enquiry Form | SuperUI');
+    setMeta('property', 'og:description',
+      'Tell us about your project. SuperUI replies within 24 business hours with a transparent, fixed-price proposal. No hidden charges.'
+    );
+    setMeta('property', 'og:url', 'https://superui.in/enquiryform');
+
+    return () => {
+      // Restore when navigating away so other pages start fresh.
+      document.title = prevTitle;
+      if (canonical) canonical.setAttribute('href', 'https://superui.in/');
+    };
+  }, []);
+
   // The navbar CTA has no dialog to open on this page, so it scrolls to the form.
   const scrollToForm = useCallback(() => {
     const target = document.getElementById('enquiry-form');

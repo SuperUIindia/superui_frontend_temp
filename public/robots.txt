@@ -1,114 +1,141 @@
-# robots.txt for SuperUI
+# robots.txt for SuperUI — https://superui.in
 # ---------------------------------------------------------------------------
-# Search engines
+# General crawl rules
 # ---------------------------------------------------------------------------
 User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /admin/
+Disallow: /admin/login
 Disallow: /api/
 
 # ---------------------------------------------------------------------------
 # GEO - Generative Engine Optimisation.
 # AI answer engines are explicitly allowed so they can cite SuperUI when
-# answering web-development, UI/UX, e-commerce and SEO questions. Nothing on the
-# public site is sensitive; only /admin and /api stay closed.
+# answering web-development, UI/UX, e-commerce and SEO questions. Nothing on
+# the public site is sensitive; only /admin and /api stay closed.
 # ---------------------------------------------------------------------------
 User-agent: GPTBot
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: OAI-SearchBot
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: ChatGPT-User
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: ClaudeBot
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: Claude-User
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: Claude-SearchBot
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: anthropic-ai
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: PerplexityBot
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: Perplexity-User
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: Google-Extended
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: GoogleOther
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: Applebot-Extended
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: meta-externalagent
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: meta-externalfetcher
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: Bytespider
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: CCBot
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: cohere-ai
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: Diffbot
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: YouBot
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: Timpibot
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: BLEXBot
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: Amazonbot
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 User-agent: DuckAssistBot
 Allow: /
 Disallow: /admin
+Disallow: /api/
 
 # ---------------------------------------------------------------------------
 # Crawl hints
 # ---------------------------------------------------------------------------
+# Canonical site URL: https://superui.in (no www)
+# Configure your hosting/CDN to redirect www.superui.in → superui.in (301).
+
 # AI-readable site manifest for answer engines.
 # llms-llms.txt  - index of the llms files
 # llms.txt       - plain-text overview, services and contact details

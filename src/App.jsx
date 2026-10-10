@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import EnquiryForm from './pages/EnquiryForm';
+import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import { SiteContentProvider, useContent, useSiteContent } from './lib/siteContent';
 import { applySeoContent, applySeoGraph, applyVerificationTags } from './lib/seo';
@@ -50,10 +51,10 @@ export default function App() {
                     one leads collection. */}
                 <Route path="/enquiryform" element={<EnquiryForm />} />
 
-                {/* Legacy contact-form URL. Serves the same enquiry form so a
-                    visitor reaching /lead/contactform is not silently dropped
-                    onto the home page by the catch-all below. */}
-                <Route path="/lead/contactform" element={<EnquiryForm />} />
+                {/* Legacy contact-form URL. Permanently redirected to the canonical
+                    /enquiryform URL so inbound links pass value and Google sees only
+                    one version of this page (not a duplicate). */}
+                <Route path="/lead/contactform" element={<Navigate to="/enquiryform" replace />} />
 
                 {/* Admin Login */}
                 <Route path="/admin/login" element={<Login />} />
@@ -68,8 +69,11 @@ export default function App() {
                   }
                 />
 
-                {/* Fallback */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                {/* 404 — any unrecognised URL renders the NotFound page, which sets
+                    noindex so search engines don't index these as successful pages.
+                    Previously this redirected to "/" (a "soft 404"), which caused
+                    Google to treat every bad URL as a duplicate of the homepage. */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </ErrorBoundary>

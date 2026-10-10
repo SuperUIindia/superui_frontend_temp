@@ -41,7 +41,8 @@ const MANAGED = [
   ['name', 'twitter:site'],
   ['name', 'twitter:title'],
   ['name', 'twitter:description'],
-  ['name', 'twitter:image']
+  ['name', 'twitter:image'],
+  ['name', 'twitter:image:alt']
 ];
 
 const SITE_URL = SITE_CONFIG.siteUrl;
@@ -159,7 +160,9 @@ function postalAddress() {
     // Bare city name: addressLocality must not carry the region or country.
     addressLocality: cityName() || undefined,
     addressRegion: BUSINESS_CONFIG.region || undefined,
-    addressCountry: BUSINESS_CONFIG.regionCode || BUSINESS_CONFIG.country || undefined,
+    // addressCountry must be ISO 3166-1 alpha-2 (e.g. "IN"), NOT a region/subdivision
+    // code like "IN-TG". BUSINESS_CONFIG.country holds the correct "IN" value.
+    addressCountry: BUSINESS_CONFIG.country || undefined,
     postalCode: BUSINESS_CONFIG.postalCode || undefined
   };
 }
@@ -175,10 +178,13 @@ function geoCoordinates() {
 
 function areaServed() {
   if (!BUSINESS_CONFIG.areasServed.length) return undefined;
-  return BUSINESS_CONFIG.areasServed.map((name) => ({
-    '@type': 'Country',
-    name
-  }));
+  // Known city names in the areasServed list. Schema.org requires that
+  // @type matches the actual entity: City for cities, Country for countries.
+  const CITY_NAMES = new Set(['warangal', 'hyderabad', 'bengaluru', 'bangalore', 'mumbai', 'delhi', 'chennai', 'kolkata', 'pune']);
+  return BUSINESS_CONFIG.areasServed.map((name) => {
+    const isCity = CITY_NAMES.has(name.toLowerCase());
+    return { '@type': isCity ? 'City' : 'Country', name };
+  });
 }
 
 function contactPoint() {
@@ -321,21 +327,23 @@ export function buildStructuredData({ seo = {}, sections = {} } = {}) {
       }
     : null;
 
-  const navLinks = Array.isArray(sections.navbar?.links) ? sections.navbar.links : [];
-  const breadcrumb = navLinks.length
-    ? {
-        '@type': 'BreadcrumbList',
-        '@id': ID.breadcrumb,
-        itemListElement: navLinks
-          .filter((link) => typeof link?.href === 'string' && link.href.startsWith('#'))
-          .map((link, index) => ({
-            '@type': 'ListItem',
-            position: index + 1,
-            name: link.label,
-            item: `${SITE_URL}/${link.href}`
-          }))
+  // BreadcrumbList: this site is a single-page application; all navbar links are
+  // in-page anchors (#top, #services …). Schema.org BreadcrumbList.item requires
+  // the URL of a web page, not a fragment identifier, so we emit a single-item
+  // breadcrumb pointing to the canonical homepage rather than fabricated URLs.
+  // This is the correct representation for a flat, one-page site hierarchy.
+  const breadcrumb = {
+    '@type': 'BreadcrumbList',
+    '@id': ID.breadcrumb,
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: SITE_URL
       }
-    : null;
+    ]
+  };
 
   const graph = [organization, website, webpage];
   if (service) graph.push(service);
