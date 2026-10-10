@@ -1,0 +1,21 @@
+# Cloudflare Pages configuration for the SuperUI frontend.
+#
+# This file is used when deploying via `wrangler pages publish`.
+# For Vercel deployments, routing and headers come from vercel.json and
+# this file is ignored.
+#
+# Single Page Application routing: Cloudflare Pages serves index.html for
+# every URL that does not match a real file. This is configured in the
+# Cloudflare dashboard (Pages site > Settings > Single Page Application
+# toggle) and does NOT belong in _redirects — a _redirects rule of
+# `/*  /index.html  200` creates an infinite loop because /index.html
+# itself matches /*, and Cloudflare rejects that at deploy time with
+# error 100324.
+#
+# If the dashboard toggle is unavailable, enable SPA fallback here:
+#   [pages]
+#   # (no fallback key — the dashboard toggle is the supported path)
+
+name = "superui-frontend-temp"
+pages_build_directory = "dist"
+compatibility_date = "2025-10-01"

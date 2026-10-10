@@ -1,1 +1,15 @@
-/*    /index.html   200
+# This file previously contained a single rule:
+#   /*    /index.html   200
+# That rule created an infinite redirect loop: /index.html matches /*, so
+# Cloudflare redirected it back to /index.html forever. Cloudflare Pages
+# rejects this at deploy time with error code 100324.
+#
+# For Cloudflare Pages SPA routing, do NOT use _redirects. Instead:
+#   1. In the Cloudflare dashboard, go to your Pages site > Settings >
+#      Single Page Application, and enable "Single Page Application".
+#   2. Or create a wrangler.toml at the project root with:
+#      [pages]
+#      # SPA fallback is configured in the dashboard, not here.
+#
+# This file is intentionally left as documentation only. Remove it if
+# you are deploying exclusively via Vercel and want to avoid confusion.
