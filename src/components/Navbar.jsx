@@ -79,6 +79,8 @@ export default function Navbar({ onOpenContactModal }) {
             <img
               src={logoUrl}
               alt={content.brandName || SITE_CONFIG.brand}
+              width={36}
+              height={36}
               className="w-9 h-9 object-contain rounded-xl transition-transform duration-300 group-hover:scale-105"
             />
             <div className="flex flex-col">

@@ -75,6 +75,8 @@ export default function Footer({ onSelectService }) {
               <img
                 src={logoUrl}
                 alt={brandName}
+                width={32}
+                height={32}
                 className="w-8 h-8 object-contain rounded-xl"
               />
               <span className="text-xl font-extrabold tracking-tight">

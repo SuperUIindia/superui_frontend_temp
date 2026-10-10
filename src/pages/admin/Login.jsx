@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, User, Eye, EyeOff, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Lock, User, Eye, EyeOff, AlertCircle, ArrowRight, ShieldCheck, Clock } from 'lucide-react';
 import { api } from '../../lib/api';
 import { SITE_CONFIG } from '../../lib/env';
 import Blobs from '../../components/Blobs';
@@ -9,20 +9,22 @@ import Button from '../../components/Button';
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const isExpired = searchParams.get('expired') === '1';
 
-  // If already logged in, redirect immediately to dashboard
+  // If already logged in, redirect immediately to dashboard overview
   useEffect(() => {
     async function checkAuth() {
       try {
         const res = await api.get('/api/admin/me');
-        if (res && res.success) {
-          navigate('/admin', { replace: true });
+        if (res?.success) {
+          navigate('/admin/overview', { replace: true });
         }
       } catch (err) {
         // Not logged in, stay on login page
@@ -50,13 +52,13 @@ export default function Login() {
         password
       });
 
-      if (res && res.success) {
-        navigate('/admin', { replace: true });
+      if (res?.success) {
+        navigate('/admin/overview', { replace: true });
       } else {
-        setErrorMessage(res.message || 'Invalid username or password');
+        setErrorMessage(res?.message || 'Invalid username or password');
       }
     } catch (err) {
-      setErrorMessage(err.message || 'Invalid username or password');
+      setErrorMessage(err?.message || 'Invalid username or password');
     } finally {
       setLoading(false);
     }
@@ -97,6 +99,14 @@ export default function Login() {
           </p>
         </div>
 
+        {/* Session Expired Notice */}
+        {isExpired && !errorMessage && (
+          <div className="mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium flex items-center gap-2.5">
+            <Clock className="w-4 h-4 shrink-0 text-amber-600" />
+            <span>Your previous session has expired. Please log in again to continue.</span>
+          </div>
+        )}
+
         {/* Animated Error Alert */}
         <AnimatePresence>
           {errorMessage && (
@@ -122,7 +132,7 @@ export default function Login() {
               Username
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#A1A1AA]">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#71717A]">
                 <User className="w-4 h-4" />
               </div>
               <input
@@ -134,7 +144,7 @@ export default function Login() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter admin username"
-                className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-[#EDEDED] bg-white text-[#111111] placeholder:text-[#A1A1AA] focus:border-[#FF5E00] focus:ring-2 focus:ring-[#FF5E00]/20 focus:outline-none transition-colors"
+                className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-[#EDEDED] bg-white text-[#111111] placeholder:text-[#71717A] focus:border-[#FF5E00] focus:ring-2 focus:ring-[#FF5E00]/20 focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -148,7 +158,7 @@ export default function Login() {
               Password
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#A1A1AA]">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#71717A]">
                 <Lock className="w-4 h-4" />
               </div>
               <input
@@ -160,12 +170,12 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter admin password"
-                className="w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border border-[#EDEDED] bg-white text-[#111111] placeholder:text-[#A1A1AA] focus:border-[#FF5E00] focus:ring-2 focus:ring-[#FF5E00]/20 focus:outline-none transition-colors"
+                className="w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border border-[#EDEDED] bg-white text-[#111111] placeholder:text-[#71717A] focus:border-[#FF5E00] focus:ring-2 focus:ring-[#FF5E00]/20 focus:outline-none transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#A1A1AA] hover:text-[#111111] focus:outline-none"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#71717A] hover:text-[#111111] focus:outline-none"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -189,7 +199,7 @@ export default function Login() {
         </form>
 
         <div className="mt-8 pt-6 border-t border-[#EDEDED] text-center">
-          <div className="inline-flex items-center gap-1.5 text-xs text-[#A1A1AA]">
+          <div className="inline-flex items-center gap-1.5 text-xs text-[#71717A]">
             <ShieldCheck className="w-4 h-4 text-[#7C3AED]" />
             <span>Protected with rate limiting and httpOnly cookies</span>
           </div>

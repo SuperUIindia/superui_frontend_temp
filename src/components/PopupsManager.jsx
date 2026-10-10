@@ -433,7 +433,7 @@ export default function PopupsManager() {
               <div className="relative w-full aspect-square bg-[#FAFAFA]">
                 <img
                   src={safeImageUrl(popup.imageUrl)}
-                  alt={popup.title}
+                  alt={popup.title || 'Promotional Offer Poster'}
                   loading="lazy"
                   onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                   className="w-full h-full object-cover"

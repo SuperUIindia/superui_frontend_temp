@@ -8,6 +8,7 @@ import { SiteContentProvider, useContent, useSiteContent } from './lib/siteConte
 import { applySeoContent, applySeoGraph, applyVerificationTags } from './lib/seo';
 import { ToastProvider } from './components/Toast';
 import ErrorBoundary from './components/ErrorBoundary';
+import { PATHS } from './routes/paths';
 
 // Lazy-load admin modules to optimize bundle size & page speed
 const Login = lazy(() => import('./pages/admin/Login'));
@@ -26,8 +27,6 @@ function PageLoader() {
 }
 
 export default function App() {
-  // Search Console verification can only be injected at runtime, so it runs
-  // once on mount rather than inside the route-dependent effect below.
   useEffect(() => {
     applyVerificationTags();
   }, []);
@@ -35,35 +34,30 @@ export default function App() {
   return (
     <ToastProvider>
       <BrowserRouter>
-        {/* Every public section reads its copy from this provider, which loads
-            the whole sitecontents collection once per page load. */}
         <SiteContentProvider>
           <SeoSync />
-          {/* A lazy admin chunk that fails to load must not blank the site. */}
           <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* Public Landing Page */}
-                <Route path="/" element={<Home />} />
+                <Route path={PATHS.home} element={<Home />} />
 
-                {/* Standalone enquiry form. Renders the same ContactForm the home
-                    page does and posts to the same endpoint, so both write to
-                    one leads collection. */}
-                <Route path="/enquiryform" element={<EnquiryForm />} />
+                {/* Canonical Enquiry Page */}
+                <Route path={PATHS.enquiry} element={<EnquiryForm />} />
 
-                {/* Legacy contact-form URL. Permanently redirected to the canonical
-                    /enquiryform URL so inbound links pass value and Google sees only
-                    one version of this page (not a duplicate). */}
-                <Route path="/lead/contactform" element={<Navigate to="/enquiryform" replace />} />
+                {/* Legacy contact / enquiry form redirects */}
+                <Route path={PATHS.enquiryLegacy} element={<Navigate to={PATHS.enquiry} replace />} />
+                <Route path={PATHS.leadContactLegacy} element={<Navigate to={PATHS.enquiry} replace />} />
 
-                {/* Admin Login — accessible at both /admin/login and /login */}
-                <Route path="/admin/login" element={<Login />} />
-                <Route path="/login" element={<Login />} />
+                {/* Admin Login */}
+                <Route path={PATHS.adminLogin} element={<Login />} />
+                <Route path={PATHS.loginLegacy} element={<Navigate to={PATHS.adminLogin} replace />} />
 
-                {/* Redirect bare /admin to the login screen for unauthenticated users.
-                    Authenticated users are redirected to the dashboard by ProtectedRoute. */}
+                {/* Admin Console Route Redirects & Tabs */}
+                <Route path={PATHS.admin} element={<Navigate to={PATHS.adminOverview} replace />} />
+
                 <Route
-                  path="/admin"
+                  path={`${PATHS.admin}/*`}
                   element={
                     <ProtectedRoute>
                       <Dashboard />
@@ -71,10 +65,7 @@ export default function App() {
                   }
                 />
 
-                {/* 404 — any unrecognised URL renders the NotFound page, which sets
-                    noindex so search engines don't index these as successful pages.
-                    Previously this redirected to "/" (a "soft 404"), which caused
-                    Google to treat every bad URL as a duplicate of the homepage. */}
+                {/* 404 handler */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
@@ -86,18 +77,11 @@ export default function App() {
 }
 
 /**
- * Keeps the document head in sync with the database-driven `seo` section and
- * (re)emits the JSON-LD graph for SEO / AEO / GEO.
- *
- * The admin routes are excluded: indexing a login screen helps nobody and the
- * head should describe the public site, not the dashboard.
+ * Keeps document head in sync with site content SEO
  */
 function SeoSync() {
   const seo = useContent('seo');
   const { content } = useSiteContent();
-  // useLocation, not window.location: a direct window read is not reactive, so
-  // a client-side navigation into /admin would never re-run this effect and the
-  // admin routes would stay indexable.
   const { pathname } = useLocation();
   const isPublicPage = !pathname.startsWith('/admin');
 
@@ -105,7 +89,6 @@ function SeoSync() {
     if (typeof document === 'undefined') return undefined;
 
     if (!isPublicPage) {
-      // Explicitly keep the dashboard and login screen out of every index.
       let meta = document.head.querySelector('meta[name="robots"]');
       if (!meta) {
         meta = document.createElement('meta');
@@ -116,8 +99,6 @@ function SeoSync() {
       return undefined;
     }
 
-    // Returning to the public site must restore the indexable directive that the
-    // admin branch just overwrote.
     const meta = document.head.querySelector('meta[name="robots"]');
     if (meta && !/index/i.test(meta.getAttribute('content') || '')) {
       meta.setAttribute('content', 'index, follow, max-snippet:-1, max-image-preview:large');
@@ -126,8 +107,6 @@ function SeoSync() {
     applySeoContent(seo);
     applySeoGraph({ seo, sections: content });
     return undefined;
-    // `content` changes identity whenever any section is reloaded, which is
-    // exactly when the JSON-LD graph must be regenerated.
   }, [seo, content, isPublicPage]);
 
   return null;

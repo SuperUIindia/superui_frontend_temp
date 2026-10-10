@@ -1,61 +1,35 @@
 /**
  * Centralized API client.
  *
- * The API origin comes from VITE_API_BASE_URL in frontend/.env (see
- * lib/env.js). When that value is blank the app is served from the same origin
- * that hosts the API, so requests go to a relative "/api/..." path and are
- * handled by the Vite dev proxy in development. No host or port is ever written
- * in code.
+ * The API origin comes from VITE_API_BASE_URL in frontend/.env (see lib/env.js).
+ * When that value is blank the app is served from the same origin that hosts the API,
+ * so requests go to a relative "/api/..." path and are handled by the Vite dev proxy in development.
  *
- * Security rules enforced here rather than in each caller:
- *   1. Every endpoint must be a same-origin relative "/api/..." path. An
- *      absolute URL (or a protocol-relative `//host`) is rejected outright, so
- *      a value that reached this function from the database or a query string
- *      can never redirect a credentialed request to a third party.
- *   2. `Content-Type: application/json` is sent only when a body exists.
- *      Advertising JSON on a bodyless GET turns it into a CORS preflight and
- *      breaks on simple cross-origin setups.
- *   3. Every request is bounded by an AbortController timeout, so a hung socket
- *      cannot leave the UI spinning forever.
- *   4. `credentials: 'include'` carries the httpOnly session cookie.
- *
- * The admin username and password are never referenced here: the browser only
- * ever posts whatever the operator types into the login form, and the session
- * is a httpOnly cookie set by the backend.
+ * Security & Reliability Rules:
+ *   1. Rejects unexpected or protocol-relative endpoints to prevent open-redirect / SSRF.
+ *   2. Sends Content-Type only when a body exists.
+ *   3. Enforces request timeouts via AbortController.
+ *   4. Handles non-JSON / HTML replies safely (does not return null on 200).
+ *   5. On 401 Unauthorized for admin pages, clears session state and redirects to /admin/login.
  */
 import { SITE_CONFIG } from './env';
 
 const API_BASE = SITE_CONFIG.apiBaseUrl;
 
-/** Requests are aborted after this many milliseconds. */
-const REQUEST_TIMEOUT_MS = 20000;
+/** Requests are aborted after this many milliseconds (Render free tier can take 30-40s on cold start). */
+const REQUEST_TIMEOUT_MS = 45000;
 
 /** Endpoints must start with this prefix. */
 const API_PREFIX = '/api/';
 
-/**
- * Resolves an endpoint against the API base.
- *
- * A blank VITE_API_BASE_URL means same-origin "/api/...", which is the correct
- * target for a Vercel deployment that rewrites /api to the backend and for local
- * development behind the Vite proxy.
- *
- * API_BASE is already stripped of any trailing "/api" by lib/env.js, so this
- * concatenation can never emit "/api/api/...".
- */
 function resolveApiUrl(endpoint) {
   return `${API_BASE}${endpoint}`;
 }
 
-/**
- * Rejects anything that is not a plain same-origin "/api/..." path.
- * Guards against open-redirect / SSRF-by-proxy through a DB-controlled path.
- */
 function assertSafeEndpoint(endpoint) {
   if (typeof endpoint !== 'string' || !endpoint.startsWith(API_PREFIX)) {
     throw new Error(`Blocked API request to an unexpected endpoint: ${String(endpoint)}`);
   }
-  // "/api//evil.com" and backslashes are treated as absolute by some parsers.
   if (endpoint.includes('//') || endpoint.includes('\\')) {
     throw new Error(`Blocked API request to an unexpected endpoint: ${endpoint}`);
   }
@@ -95,9 +69,7 @@ export async function request(endpoint, options = {}) {
       timeoutError.status = 0;
       throw timeoutError;
     }
-    // Name the real cause: a bare "could not reach the server" sent people
-    // looking at the wrong box when the actual problem was CORS, an offline
-    // dev server or a bad VITE_API_BASE_URL.
+
     const reason =
       err && err.name === 'TypeError'
         ? 'the request was blocked by CORS, the API is offline, or VITE_API_BASE_URL is wrong'
@@ -122,13 +94,40 @@ export async function request(endpoint, options = {}) {
   }
 
   let data = null;
-  try {
-    data = await response.json();
-  } catch {
-    data = null;
+  const contentType = response.headers.get('content-type') || '';
+  const isJson = contentType.includes('application/json');
+
+  if (isJson) {
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+  } else {
+    // If server responded 200 with HTML (e.g. SPA index.html fallback), treat as an unexpected response
+    const textBody = await response.text().catch(() => '');
+    if (response.ok) {
+      const error = new Error('Server returned an unexpected non-JSON response. Please verify that the API backend is running and reachable.');
+      error.status = response.status;
+      error.isHtmlFallback = textBody.includes('<!DOCTYPE html>') || textBody.includes('<html');
+      throw error;
+    }
   }
 
   if (!response.ok) {
+    // Session expired handling for admin routes
+    if (response.status === 401 && typeof window !== 'undefined') {
+      const currentPath = window.location.pathname;
+      if (currentPath.startsWith('/admin') && !currentPath.startsWith('/admin/login')) {
+        // Redirect to login with expired param
+        setTimeout(() => {
+          if (window.location.pathname !== '/admin/login') {
+            window.location.href = '/admin/login?expired=1';
+          }
+        }, 100);
+      }
+    }
+
     const message = (data && data.message) || `Request failed with status ${response.status}`;
     const error = new Error(message);
     error.status = response.status;
@@ -145,13 +144,20 @@ export const api = {
   patch: (endpoint, body, options = {}) => request(endpoint, { ...options, method: 'PATCH', body: JSON.stringify(body) }),
   put: (endpoint, body, options = {}) => request(endpoint, { ...options, method: 'PUT', body: JSON.stringify(body) }),
   delete: (endpoint, options = {}) => request(endpoint, { ...options, method: 'DELETE' }),
-  /** DELETE with a JSON body, e.g. bulkDelete(url, { ids }) or { scope: 'all' } */
-  bulkDelete: (endpoint, payload, options = {}) =>
-    request(endpoint, { ...options, method: 'DELETE', body: JSON.stringify(payload || {}) }),
+  /** Bulk delete helper: tries POST to /bulk-delete first, falling back to DELETE with payload */
+  bulkDelete: async (endpoint, payload, options = {}) => {
+    try {
+      return await request(`${endpoint}/bulk-delete`, { ...options, method: 'POST', body: JSON.stringify(payload || {}) });
+    } catch (err) {
+      // Fallback to DELETE with body if endpoint does not support /bulk-delete
+      if (err.status === 404) {
+        return await request(endpoint, { ...options, method: 'DELETE', body: JSON.stringify(payload || {}) });
+      }
+      throw err;
+    }
+  },
   downloadCsv: async (endpoint) => {
     const blob = await request(endpoint, { method: 'GET', responseType: 'blob' });
-    // Revoking synchronously after click() can cancel the download in some
-    // browsers, so the object URL is released on the next tick instead.
     const downloadUrl = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = downloadUrl;

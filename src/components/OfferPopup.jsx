@@ -187,7 +187,7 @@ export default function OfferPopup({ onOpenContact }) {
               ) : (
                 <img
                   src={posterUrl}
-                  alt={popup.title}
+                  alt={popup.title || 'Special Promotional Offer'}
                   loading="lazy"
                   onError={() => setImageFailed(true)}
                   className="w-full h-full object-cover"

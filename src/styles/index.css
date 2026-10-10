@@ -3,6 +3,20 @@
 @source "../../index.html";
 @source "../../src/**/*.{js,jsx}";
 
+@theme {
+  --color-brand: #FF5E00;          /* large buttons, icons, accents */
+  --color-brand-strong: #C2410C;   /* small orange text, links (5.18:1 on white - WCAG AA compliant) */
+  --color-brand-tint: #FFF1E8;
+  --color-violet: #7C3AED;         /* accent purple (5.70:1 on white) */
+  --color-ink: #111111;            /* primary text */
+  --color-muted: #6B6B6B;          /* secondary text (5.33:1 on white) */
+  --color-subtle: #71717A;         /* tertiary / caption / placeholder text (4.5:1+ compliant) */
+  --color-line: #EDEDED;           /* borders */
+  --color-surface: #FAFAFA;        /* backgrounds */
+  --radius-card: 1.5rem;
+  --shadow-card: 0 10px 30px -12px rgb(17 17 17 / 0.18);
+}
+
 :root {
   --color-brand-orange: #FF5E00;
   --color-brand-violet: #7C3AED;

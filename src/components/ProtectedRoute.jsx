@@ -14,7 +14,7 @@ export default function ProtectedRoute({ children }) {
       try {
         const res = await api.get('/api/admin/me');
         if (isMounted) {
-          if (res && res.success) {
+          if (res?.success) {
             setAuthenticated(true);
           } else {
             setAuthenticated(false);
