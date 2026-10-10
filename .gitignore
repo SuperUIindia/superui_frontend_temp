@@ -102,9 +102,9 @@ $RECYCLE.BIN/
 service-account*.json
 secrets.json
 
-# --- Misc ------------------------------------------------------------------
-npm-debug.log*
-build-info.txt
+# --- Documentation ----------------------------------------------------------
+# Markdown files are kept in the outer docs/ folder, never in this repo.
+*.md
 
 # Other package managers' lockfiles. package-lock.json IS committed on purpose:
 # the exact dependency tree has to be reproducible for a deployment build.
