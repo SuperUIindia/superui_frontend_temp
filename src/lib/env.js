@@ -41,7 +41,8 @@ const SILENT_WHEN_ABSENT = new Set([
   'VITE_AREAS_SERVED',
   'VITE_CONTACT_EMAIL',
   'VITE_CONTACT_PHONE',
-  'VITE_SITE_KEYWORDS'
+  'VITE_SITE_KEYWORDS',
+  'VITE_API_BASE_URL'
 ]);
 
 function optional(name, fallback = '') {
@@ -142,10 +143,24 @@ function normalizeApiBase(raw) {
   return withoutPrefix === '/' ? '' : withoutPrefix;
 }
 
-// Blank means "same origin", which is correct for a Vercel-hosted frontend
-// whose /api routes are rewritten to the backend, and for local dev where the
-// Vite proxy handles it.
-const API_BASE_URL = normalizeApiBase(configured('VITE_API_BASE_URL'));
+/**
+ * Resolves the API origin.
+ * In development, returns "" so the Vite dev server proxy handles /api calls.
+ * In production builds, uses VITE_API_BASE_URL if configured, otherwise falls back
+ * to the live Render backend URL so static hosting (e.g. Cloudflare Pages) does not 404.
+ */
+function resolveApiBaseUrl() {
+  const configuredValue = normalizeApiBase(optional('VITE_API_BASE_URL'));
+  if (configuredValue) return configuredValue;
+
+  // Local development relies on Vite proxy (or same-origin)
+  if (import.meta.env.DEV) return '';
+
+  // Production fallback to live Render backend
+  return 'https://superui-backend-temp.onrender.com';
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 export const SITE_CONFIG = Object.freeze({
   /** Public origin of this frontend, e.g. "https://superui.in". */
