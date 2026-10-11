@@ -82,16 +82,21 @@
     <meta name="twitter:image" content="https://superui.in/superui_logo.png" />
     <meta name="twitter:image:alt" content="SuperUI logo" />
 
-    <!-- Favicon and PWA -->
+    <!--
+      Favicon and PWA
+    -->
     <link rel="icon" type="image/png" href="/superui_logo.png" />
     <link rel="apple-touch-icon" href="/superui_logo.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
     <!--
-      Preload the logo so it is not discovered late in the render chain.
-      This is the Largest Contentful Paint candidate on most viewport sizes.
+      Preload the logo as the page's Largest Contentful Paint candidate.
+      `fetchpriority="high"` tells the browser to request it before the render
+      blocking CSS, which removes the "preloaded but unused" warning that fires
+      when the preload competes with the same resource discovered later in the
+      document. The `as="image"` type is required for preload to be valid.
     -->
-    <link rel="preload" as="image" href="/superui_logo.png" />
+    <link rel="preload" as="image" fetchpriority="high" href="/superui_logo.png" />
 
     <!--
       Google Fonts: loaded synchronously rather than with the
