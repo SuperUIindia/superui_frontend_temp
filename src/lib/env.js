@@ -95,9 +95,11 @@ function normalizeUrl(raw) {
  * second fallback is correct rather than a guess: for a static SPA the deployed
  * origin IS `location.origin`, so canonical URLs, Open Graph and structured data
  * come out right even when the build machine had no .env file.
+ *
+ * If several URLs are given (comma separated), the FIRST one is the canonical.
  */
 function resolveSiteUrl() {
-  const configuredUrl = optional('VITE_SITE_URL');
+  const configuredUrl = optional('VITE_SITE_URL').split(',')[0].trim();
   if (configuredUrl) {
     try {
       return normalizeUrl(configuredUrl);
@@ -144,6 +146,17 @@ const SITE_URL = resolveSiteUrl();
 const SITE_HOST = new URL(SITE_URL).host;
 
 /**
+ * Hostnames served by Vercel, where vercel.json rewrites /api/* to the Render
+ * backend. On these hosts the API is reached on the SAME ORIGIN, so the browser
+ * never makes a cross-origin call: no CORS, and httpOnly auth cookies stay
+ * first-party. Add a host here only if it ships the same /api rewrite.
+ */
+const PROXIED_HOSTS = new Set(['superui.in', 'www.superui.in']);
+
+/** Last-resort backend for hosts that have no /api rewrite (e.g. Cloudflare Pages). */
+const DIRECT_BACKEND_FALLBACK = 'https://superui-backend-temp.onrender.com';
+
+/**
  * Normalises VITE_API_BASE_URL into a PREFIX, never a full endpoint.
  *
  * Every endpoint passed to lib/api.js already starts with "/api/", so the base
@@ -164,20 +177,33 @@ function normalizeApiBase(raw) {
 }
 
 /**
- * Resolves the API origin.
- * In development, returns "" so the Vite dev server proxy handles /api calls.
- * In production builds, uses VITE_API_BASE_URL if configured, otherwise falls back
- * to the live Render backend URL so static hosting (e.g. Cloudflare Pages) does not 404.
+ * Resolves the API origin. "" means "same origin" (requests go to /api/...).
+ *
+ *   1. VITE_API_BASE_URL with a host (e.g. https://superui.in) -> that origin.
+ *   2. VITE_API_BASE_URL set to "/" or "/api" -> same origin. (Previously this
+ *      fell through to the Render fallback, which caused the CORS errors.)
+ *   3. Development -> "" so the Vite dev proxy handles /api.
+ *   4. Page served from a proxied host (superui.in) -> "" (Vercel rewrite).
+ *   5. Anything else -> the direct Render backend.
  */
 function resolveApiBaseUrl() {
-  const configuredValue = normalizeApiBase(optional('VITE_API_BASE_URL'));
+  const raw = optional('VITE_API_BASE_URL');
+  const configuredValue = normalizeApiBase(raw);
   if (configuredValue) return configuredValue;
+
+  // Explicit same-origin value ("/" or "/api"): honour it.
+  if (raw) return '';
 
   // Local development relies on Vite proxy (or same-origin)
   if (import.meta.env.DEV) return '';
 
-  // Production fallback to live Render backend
-  return 'https://superui-backend-temp.onrender.com';
+  // Production on Vercel: same origin, the rewrite forwards to Render.
+  if (typeof window !== 'undefined' && PROXIED_HOSTS.has(window.location.hostname)) {
+    return '';
+  }
+
+  // Production on a host with no /api rewrite: call the backend directly.
+  return DIRECT_BACKEND_FALLBACK;
 }
 
 const API_BASE_URL = resolveApiBaseUrl();
