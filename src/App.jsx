@@ -77,37 +77,53 @@ export default function App() {
 }
 
 /**
+ * Pages Google may index. Every other path (admin, legacy redirects, 404s for
+ * mistyped URLs) gets "noindex". When you add a new public page, such as a
+ * service or city landing page, ADD ITS PATH HERE or it will not be indexed.
+ */
+const INDEXABLE_PATHS = new Set([PATHS.home, PATHS.enquiry]);
+
+const ROBOTS_INDEX = 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1';
+const ROBOTS_NOINDEX = 'noindex, nofollow, noarchive';
+
+function setRobots(content) {
+  let meta = document.head.querySelector('meta[name="robots"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.setAttribute('name', 'robots');
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute('content', content);
+}
+
+/**
  * Keeps document head in sync with site content SEO
  */
 function SeoSync() {
   const seo = useContent('seo');
   const { content } = useSiteContent();
   const { pathname } = useLocation();
-  const isPublicPage = !pathname.startsWith('/admin');
+
+  // "/enquiry/" and "/enquiry" are the same page
+  const normalizedPath = pathname.replace(/\/+$/, '') || '/';
+  const isIndexable = INDEXABLE_PATHS.has(normalizedPath);
 
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
 
-    if (!isPublicPage) {
-      let meta = document.head.querySelector('meta[name="robots"]');
-      if (!meta) {
-        meta = document.createElement('meta');
-        meta.setAttribute('name', 'robots');
-        document.head.appendChild(meta);
-      }
-      meta.setAttribute('content', 'noindex, nofollow, noarchive');
+    if (!isIndexable) {
+      setRobots(ROBOTS_NOINDEX);
       return undefined;
     }
 
-    const meta = document.head.querySelector('meta[name="robots"]');
-    if (meta && !/index/i.test(meta.getAttribute('content') || '')) {
-      meta.setAttribute('content', 'index, follow, max-snippet:-1, max-image-preview:large');
-    }
+    // Set explicitly. The old check /index/i also matched "noindex", so after
+    // visiting /admin the tag stayed noindex on public pages.
+    setRobots(ROBOTS_INDEX);
 
     applySeoContent(seo);
     applySeoGraph({ seo, sections: content });
     return undefined;
-  }, [seo, content, isPublicPage]);
+  }, [seo, content, isIndexable]);
 
   return null;
 }
