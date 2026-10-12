@@ -6,8 +6,10 @@ import { api } from '../../lib/api';
 import { SITE_CONFIG } from '../../lib/env';
 import Blobs from '../../components/Blobs';
 import Button from '../../components/Button';
+import useNoIndex from '../../hooks/useNoIndex';
 
 export default function Login() {
+    useNoIndex();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [username, setUsername] = useState('');
