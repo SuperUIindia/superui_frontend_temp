@@ -14,6 +14,7 @@ import VisitorsTab from '../../features/admin/visitors/VisitorsTab';
 import ClicksTab from '../../features/admin/clicks/ClicksTab';
 import PopupsManager from '../../components/PopupsManager';
 import SectionsManager from '../../components/SectionsManager';
+import useNoIndex from '../../hooks/useNoIndex';
 
 const toDateInputValue = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -21,6 +22,7 @@ const toDateInputValue = (date) =>
 const TODAY = toDateInputValue(new Date());
 
 export default function Dashboard() {
+    useNoIndex();
   const location = useLocation();
   const navigate = useNavigate();
   const services = useServices();
