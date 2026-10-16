@@ -145,22 +145,22 @@ export default function FeaturedProductsSection() {
                     decoding="async"
                   />
 
-                  {/* Soft bottom gradient overlay that reveals only on hover */}
-                  <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/55 via-black/25 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  {/* Soft bottom gradient overlay: always visible below 567px, reveals on hover on larger screens */}
+                  <div className="absolute inset-x-0 bottom-0 h-24 sm:h-28 bg-gradient-to-t from-black/60 via-black/25 to-transparent max-[567px]:opacity-100 min-[568px]:opacity-0 min-[568px]:group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-                  {/* Centered Button: completely hidden in normal time, reveals only on hover */}
-                  <div className="absolute inset-x-0 bottom-4 sm:bottom-6 z-20 flex items-center justify-center px-4 opacity-0 translate-y-3 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0 group-focus-within:pointer-events-auto transition-all duration-300 ease-out">
+                  {/* Centered Button: always visible and centered at bottom below 567px, hover-revealed on desktop */}
+                  <div className="absolute inset-x-0 bottom-3.5 sm:bottom-6 z-20 flex items-center justify-center px-4 max-[567px]:opacity-100 max-[567px]:translate-y-0 max-[567px]:pointer-events-auto min-[568px]:opacity-0 min-[568px]:translate-y-3 min-[568px]:pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0 group-focus-within:pointer-events-auto transition-all duration-300 ease-out">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleCardClick(product.href);
                       }}
-                      className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base text-white flex items-center justify-center gap-2.5 shadow-xl hover:brightness-110 active:scale-95 transition-all duration-200 cursor-pointer backdrop-blur-sm"
+                      className="px-5 sm:px-8 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-base text-white flex items-center justify-center gap-2 sm:gap-2.5 shadow-xl hover:brightness-110 active:scale-95 transition-all duration-200 cursor-pointer backdrop-blur-sm"
                       style={{ backgroundColor: accent }}
                     >
                       <span>{buttonText}</span>
-                      <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+                      <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 group-hover:translate-x-1" />
                     </button>
                   </div>
                 </div>
