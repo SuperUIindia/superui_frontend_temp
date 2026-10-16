@@ -113,7 +113,11 @@ function CloudTile({ band, instance }) {
   );
 }
 
-export default function CloudBackdrop() {
+export default function CloudBackdrop({
+  hideTopFade = false,
+  hideHeadlineGlow = false,
+  className = ''
+} = {}) {
   const shouldReduceMotion = useReducedMotion();
   const sectionRef = useRef(null);
 
@@ -126,7 +130,11 @@ export default function CloudBackdrop() {
   const fadeOut = useTransform(scrollYProgress, [0, 0.85], [1, 0.25]);
 
   return (
-    <div ref={sectionRef} className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+    <div
+      ref={sectionRef}
+      className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
+      aria-hidden="true"
+    >
       <motion.div
         className="absolute inset-0"
         style={shouldReduceMotion ? undefined : { y: parallaxY, opacity: fadeOut }}
@@ -161,17 +169,21 @@ export default function CloudBackdrop() {
         ))}
       </motion.div>
 
-      {/* Light pool behind the headline keeps the copy crisp on white */}
-      <div
-        className="absolute left-1/2 top-[38%] h-[520px] w-[min(900px,92vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.92),rgba(255,255,255,0.55)_55%,transparent_78%)]"
-        aria-hidden="true"
-      />
+      {/* Light pool behind content keeps copy and cards crisp on white */}
+      {!hideHeadlineGlow && (
+        <div
+          className="absolute left-1/2 top-[38%] h-[560px] w-[min(1200px,95vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.92),rgba(255,255,255,0.55)_55%,transparent_78%)]"
+          aria-hidden="true"
+        />
+      )}
 
-      {/* Soften the section's leading edge into the navbar */}
-      <div
-        className="absolute inset-x-0 top-0 h-32 bg-[linear-gradient(to_bottom,#FFFFFF_0%,rgba(255,255,255,0.65)_45%,transparent_100%)]"
-        aria-hidden="true"
-      />
+      {/* Soften the section's leading edge into the navbar if requested */}
+      {!hideTopFade && (
+        <div
+          className="absolute inset-x-0 top-0 h-32 bg-[linear-gradient(to_bottom,#FFFFFF_0%,rgba(255,255,255,0.65)_45%,transparent_100%)]"
+          aria-hidden="true"
+        />
+      )}
     </div>
   );
 }

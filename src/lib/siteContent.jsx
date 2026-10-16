@@ -12,11 +12,15 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { api } from './api';
 import { logError } from './logger';
+import { DIGITAL_PRODUCTS_DATA, EBOOKS_DATA } from '../data/productsData';
 
 /** Section keys, lowercased exactly as the SiteContent model stores them. */
 export const SECTION_KEYS = [
   'navbar',
   'hero',
+  'featuredproducts',
+  'digitalproducts',
+  'ebooks',
   'marquee',
   'services',
   'howitworks',
@@ -30,6 +34,8 @@ export const SECTION_KEYS = [
 ];
 
 const FALLBACKS = {
+  digitalproducts: DIGITAL_PRODUCTS_DATA,
+  ebooks: EBOOKS_DATA,
   navbar: {
     brandName: 'SuperUI',
     brandHighlight: '',
@@ -55,6 +61,35 @@ const FALLBACKS = {
     primaryCtaText: 'Start a Project',
     secondaryCtaText: 'View Services',
     trustPoints: ['Production-ready code', 'Secure by default', 'Fast 24h turnaround']
+  },
+  featuredproducts: {
+    badge: 'Curated Digital Marketplace',
+    title: 'Explore Featured Collections & Digital Assets',
+    subtitle:
+      'Choose a collection below to browse ready-to-download e-books, templates, UI components, and creative systems.',
+    products: [
+      {
+        id: 'ebooks',
+        name: 'All Types of E-Books',
+        href: '/ebooks-digital',
+        buttonLabel: 'E-Books',
+        image: '/E_Books.png',
+        imageAlt: 'All Types of E-Books - Devotional, Fitness, Recipes, Marketing Guides',
+        bgColor: 'bg-[#F5F3FF]',
+        accentColor: '#7C3AED'
+      },
+      {
+        id: 'digital-products',
+        name: 'UI Kits & Digital Assets',
+        href: '/digital-products',
+        buttonLabel: 'Websites',
+        image:
+          'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=85',
+        imageAlt: 'Digital UI Kits and Web Development Systems',
+        bgColor: 'bg-[#EFF6FF]',
+        accentColor: '#FF5E00'
+      }
+    ]
   },
   marquee: {
     rows: [

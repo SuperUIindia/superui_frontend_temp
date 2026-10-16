@@ -15,6 +15,10 @@ export const PATHS = {
   adminVisitors: '/admin/visitors',
   adminClicks: '/admin/clicks',
   adminPopups: '/admin/popups',
-  adminSections: '/admin/sections'
+  adminSections: '/admin/sections',
+  adminProducts: '/admin/products',
+  digitalProducts: '/digital-products',
+  ebooksDigital: '/ebooks-digital',
+  creativeResources: '/creative-resources'
 };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Blobs from '../components/Blobs';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
+import FeaturedProductsSection from '../components/FeaturedProductsSection';
 import Marquee from '../components/Marquee';
 import ServicesSection from '../components/ServicesSection';
 import HowItWorks from '../components/HowItWorks';
@@ -44,8 +45,12 @@ export default function Home() {
         {/* Hero Section */}
         <Hero onOpenContactModal={() => handleOpenModal('')} />
 
+        {/* Featured Products Section (below hero, above scrolling marquee) */}
+        <FeaturedProductsSection />
+
         {/* 2-row Infinite Marquee Banner */}
         <Marquee />
+
 
         {/* 10 Services Section */}
         <ServicesSection onSelectService={(service) => handleOpenModal(service)} />

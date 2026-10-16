@@ -24,9 +24,12 @@ export const BRAND_NAME = SITE_CONFIG.brand;
  * (or a value pasted from somewhere else) must not become a `javascript:` sink
  * in a rendered href.
  */
-export const INSTAGRAM_URL = safeUrl(readEnv('VITE_INSTAGRAM_URL'));
-export const FACEBOOK_URL = safeUrl(readEnv('VITE_FACEBOOK_URL'));
-export const LINKEDIN_URL = safeUrl(readEnv('VITE_LINKEDIN_URL'));
+export const INSTAGRAM_URL =
+  safeUrl(readEnv('VITE_INSTAGRAM_URL')) || 'https://instagram.com/superui';
+export const FACEBOOK_URL =
+  safeUrl(readEnv('VITE_FACEBOOK_URL')) || 'https://facebook.com/superui';
+export const LINKEDIN_URL =
+  safeUrl(readEnv('VITE_LINKEDIN_URL')) || 'https://linkedin.com/company/superui';
 
 /** Direct-message deep link with tracking params for the contact form. */
 export const INSTAGRAM_DM_URL = INSTAGRAM_URL

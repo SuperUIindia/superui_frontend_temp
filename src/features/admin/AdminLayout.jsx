@@ -8,7 +8,8 @@ import {
   LogOut,
   RefreshCw,
   Image as ImageIcon,
-  LayoutTemplate
+  LayoutTemplate,
+  Package
 } from 'lucide-react';
 import { SITE_CONFIG } from '../../lib/env';
 import { PATHS } from '../../routes/paths';
@@ -42,7 +43,8 @@ export default function AdminLayout({
     { to: PATHS.adminVisitors, label: 'Visitors Telemetry', icon: Users },
     { to: PATHS.adminClicks, label: 'Card Clicks', icon: MousePointerClick },
     { to: PATHS.adminPopups, label: 'Offer Popups', icon: ImageIcon },
-    { to: PATHS.adminSections, label: 'All Sections', icon: LayoutTemplate }
+    { to: PATHS.adminSections, label: 'All Sections', icon: LayoutTemplate },
+    { to: PATHS.adminProducts, label: 'Manage Products', icon: Package }
   ];
 
   return (

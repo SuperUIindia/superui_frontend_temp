@@ -2,6 +2,9 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import EnquiryForm from './pages/EnquiryForm';
+import DigitalProductsPage from './pages/DigitalProductsPage';
+import EbooksDigitalPage from './pages/EbooksDigitalPage';
+import CreativeResourcesPage from './pages/CreativeResourcesPage';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import { SiteContentProvider, useContent, useSiteContent } from './lib/siteContent';
@@ -42,6 +45,11 @@ export default function App() {
                 {/* Public Landing Page */}
                 <Route path={PATHS.home} element={<Home />} />
 
+                {/* Digital Product Pages */}
+                <Route path={PATHS.digitalProducts} element={<DigitalProductsPage />} />
+                <Route path={PATHS.ebooksDigital} element={<EbooksDigitalPage />} />
+                <Route path={PATHS.creativeResources} element={<CreativeResourcesPage />} />
+
                 {/* Canonical Enquiry Page */}
                 <Route path={PATHS.enquiry} element={<EnquiryForm />} />
 
@@ -81,7 +89,7 @@ export default function App() {
  * mistyped URLs) gets "noindex". When you add a new public page, such as a
  * service or city landing page, ADD ITS PATH HERE or it will not be indexed.
  */
-const INDEXABLE_PATHS = new Set([PATHS.home, PATHS.enquiry]);
+const INDEXABLE_PATHS = new Set([PATHS.home, PATHS.enquiry, PATHS.digitalProducts, PATHS.ebooksDigital, PATHS.creativeResources]);
 
 const ROBOTS_INDEX = 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1';
 const ROBOTS_NOINDEX = 'noindex, nofollow, noarchive';

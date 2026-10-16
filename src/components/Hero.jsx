@@ -63,11 +63,11 @@ export default function Hero({ onOpenContactModal }) {
   };
 
   return (
-    <section id={content.anchorId || 'top'} className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
+    <section id={content.anchorId || 'top'} className="relative pt-16 pb-12 md:pt-20 md:pb-16 overflow-hidden">
       <CloudBackdrop />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center pt-10">
           {/* Top Pill / Trust Tag */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}

@@ -14,6 +14,7 @@ import VisitorsTab from '../../features/admin/visitors/VisitorsTab';
 import ClicksTab from '../../features/admin/clicks/ClicksTab';
 import PopupsManager from '../../components/PopupsManager';
 import SectionsManager from '../../components/SectionsManager';
+import ProductsManager from '../../components/ProductsManager';
 import useNoIndex from '../../hooks/useNoIndex';
 
 const toDateInputValue = (date) =>
@@ -78,6 +79,7 @@ export default function Dashboard() {
   else if (pathname.includes('/clicks')) activeTab = 'clicks';
   else if (pathname.includes('/popups')) activeTab = 'popups';
   else if (pathname.includes('/sections')) activeTab = 'sections';
+  else if (pathname.includes('/products')) activeTab = 'products';
 
   // Fetch Current Admin Info
   useEffect(() => {
@@ -471,6 +473,8 @@ export default function Dashboard() {
       {activeTab === 'popups' && <PopupsManager />}
 
       {activeTab === 'sections' && <SectionsManager />}
+
+      {activeTab === 'products' && <ProductsManager />}
 
       {confirmElement}
     </AdminLayout>

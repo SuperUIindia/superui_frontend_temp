@@ -45,17 +45,23 @@ export default function Navbar({ onOpenContactModal }) {
   const handleLinkClick = (e, href) => {
     e.preventDefault();
     setMobileMenuOpen(false);
+    const isHomePage = window.location.pathname === '/';
+
     if (href === '#top') {
+      if (!isHomePage) {
+        window.location.href = '/';
+        return;
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    // getElementById, not querySelector: an id containing characters that are
-    // legal in the database but illegal in a CSS selector throws instead of
-    // scrolling.
+
     const id = href.replace(/^#/, '');
     const target = id ? document.getElementById(id) : null;
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.location.href = `/${href}`;
     }
   };
 
@@ -73,15 +79,15 @@ export default function Navbar({ onOpenContactModal }) {
           <a
             href={homeHref}
             onClick={(e) => handleLinkClick(e, homeHref)}
-            className="flex items-center gap-2.5 group cursor-pointer"
+            className="flex items-center gap-1 group cursor-pointer"
             aria-label={`${content.brandName || SITE_CONFIG.brand} Home`}
           >
             <img
               src={logoUrl}
               alt={content.brandName || SITE_CONFIG.brand}
-              width={36}
-              height={36}
-              className="w-9 h-9 object-contain rounded-xl transition-transform duration-300 group-hover:scale-105"
+              width={28}
+              height={28}
+              className="w-7 h-7 object-contain rounded-xl transition-transform duration-300 group-hover:scale-105"
             />
             <div className="flex flex-col">
               <span className="text-xl font-bold tracking-tight text-[#111111]">
