@@ -37,22 +37,22 @@ import ContactModal from './ContactModal';
 
 // Supported international currencies with INR (India) as default base region
 export const CURRENCIES = {
-  INR: { code: 'INR', symbol: '₹', name: 'INR (₹)', country: 'India (Default)', rate: 85, locale: 'en-IN' },
-  USD: { code: 'USD', symbol: '$', name: 'USD ($)', country: 'United States', rate: 1, locale: 'en-US' },
-  GBP: { code: 'GBP', symbol: '£', name: 'GBP (£)', country: 'United Kingdom', rate: 0.79, locale: 'en-GB' },
-  EUR: { code: 'EUR', symbol: '€', name: 'EUR (€)', country: 'European Union', rate: 0.92, locale: 'de-DE' },
-  CAD: { code: 'CAD', symbol: 'C$', name: 'CAD (C$)', country: 'Canada', rate: 1.38, locale: 'en-CA' },
-  AUD: { code: 'AUD', symbol: 'A$', name: 'AUD (A$)', country: 'Australia', rate: 1.52, locale: 'en-AU' },
-  AED: { code: 'AED', symbol: 'AED ', name: 'AED', country: 'United Arab Emirates', rate: 3.67, locale: 'en-AE' },
+  INR: { code: 'INR', symbol: '₹', name: 'INR (₹)', country: 'India (Default Base)', rate: 1, locale: 'en-IN' },
+  USD: { code: 'USD', symbol: '$', name: 'USD ($)', country: 'United States', rate: 1 / 86, locale: 'en-US' },
+  GBP: { code: 'GBP', symbol: '£', name: 'GBP (£)', country: 'United Kingdom', rate: 1 / 109, locale: 'en-GB' },
+  EUR: { code: 'EUR', symbol: '€', name: 'EUR (€)', country: 'European Union', rate: 1 / 93, locale: 'de-DE' },
+  CAD: { code: 'CAD', symbol: 'C$', name: 'CAD (C$)', country: 'Canada', rate: 1 / 63, locale: 'en-CA' },
+  AUD: { code: 'AUD', symbol: 'A$', name: 'AUD (A$)', country: 'Australia', rate: 1 / 56, locale: 'en-AU' },
+  AED: { code: 'AED', symbol: 'AED ', name: 'AED', country: 'United Arab Emirates', rate: 1 / 23.4, locale: 'en-AE' },
 };
 
 /**
- * Format a base USD price according to the selected currency.
+ * Format a base INR price according to the selected currency.
  */
-export const formatPrice = (usdAmount, currencyCode = 'INR') => {
-  if (usdAmount === undefined || usdAmount === null || usdAmount === '') return '';
-  const num = Number(usdAmount);
-  if (isNaN(num)) return usdAmount;
+export const formatPrice = (inrAmount, currencyCode = 'INR') => {
+  if (inrAmount === undefined || inrAmount === null || inrAmount === '') return '';
+  const num = Number(inrAmount);
+  if (isNaN(num)) return inrAmount;
 
   const curr = CURRENCIES[currencyCode] || CURRENCIES.INR;
   const converted = num * curr.rate;
@@ -61,7 +61,7 @@ export const formatPrice = (usdAmount, currencyCode = 'INR') => {
     return `${curr.symbol}${Math.round(converted).toLocaleString('en-IN')}`;
   }
   if (currencyCode === 'AED') {
-    return `${Math.round(converted).toLocaleString()} ${curr.code}`;
+    return `${Math.round(converted).toLocaleString()} ${curr.code.trim()}`;
   }
   return `${curr.symbol}${converted.toFixed(2)}`;
 };
@@ -167,13 +167,13 @@ export default function ProductCatalogView({
       );
     }
 
-    // Price filter
-    if (priceFilter === 'under-20') {
-      result = result.filter((p) => p.price < 20);
-    } else if (priceFilter === '20-40') {
-      result = result.filter((p) => p.price >= 20 && p.price <= 40);
-    } else if (priceFilter === '40-plus') {
-      result = result.filter((p) => p.price > 40);
+    // Price filter (Base INR amounts)
+    if (priceFilter === 'under-1500') {
+      result = result.filter((p) => Number(p.price) < 1500);
+    } else if (priceFilter === '1500-2500') {
+      result = result.filter((p) => Number(p.price) >= 1500 && Number(p.price) <= 2500);
+    } else if (priceFilter === '2500-plus') {
+      result = result.filter((p) => Number(p.price) > 2500);
     }
 
     // Bestseller only toggle
@@ -481,9 +481,9 @@ export default function ProductCatalogView({
                   className="w-full py-2.5 px-3 text-sm bg-[#F9F9F9] border border-[#E5E5E5] rounded-xl text-[#333333] focus:outline-none focus:ring-2 focus:bg-white transition-all cursor-pointer"
                 >
                   <option value="all">💰 All Prices</option>
-                  <option value="under-20">Under {formatPrice(20, selectedCurrency)}</option>
-                  <option value="20-40">{formatPrice(20, selectedCurrency)} to {formatPrice(40, selectedCurrency)}</option>
-                  <option value="40-plus">{formatPrice(40, selectedCurrency)} &amp; above</option>
+                  <option value="under-1500">Under {formatPrice(1500, selectedCurrency)}</option>
+                  <option value="1500-2500">{formatPrice(1500, selectedCurrency)} to {formatPrice(2500, selectedCurrency)}</option>
+                  <option value="2500-plus">{formatPrice(2500, selectedCurrency)} &amp; above</option>
                 </select>
               </div>
 
@@ -566,7 +566,12 @@ export default function ProductCatalogView({
                 )}
                 {priceFilter !== 'all' && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#EFEFEF] text-[#222222]">
-                    Price: {priceFilter}
+                    Price:{' '}
+                    {priceFilter === 'under-1500'
+                      ? `< ${formatPrice(1500, selectedCurrency)}`
+                      : priceFilter === '1500-2500'
+                      ? `${formatPrice(1500, selectedCurrency)} - ${formatPrice(2500, selectedCurrency)}`
+                      : `> ${formatPrice(2500, selectedCurrency)}`}
                     <X
                       className="w-3 h-3 cursor-pointer hover:text-black"
                       onClick={() => setPriceFilter('all')}

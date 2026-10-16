@@ -432,10 +432,10 @@ export default function ProductsManager() {
                       <div className="p-4 space-y-2">
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-black text-sm text-[#111111]">
-                            ${p.price}{' '}
+                            ₹{Number(p.price || 0).toLocaleString('en-IN')}{' '}
                             {p.originalPrice && (
                               <span className="text-gray-400 font-normal line-through text-xs ml-1">
-                                ${p.originalPrice}
+                                ₹{Number(p.originalPrice || 0).toLocaleString('en-IN')}
                               </span>
                             )}
                           </span>
@@ -944,27 +944,39 @@ function ProductCardModal({ mode, product, activeCatalog, categories, onClose, o
             )}
           </div>
 
-          {/* Pricing */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Pricing in Indian Rupees (₹ INR) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1.5">Price ($)</label>
-              <input
-                type="number"
-                step="any"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                className="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white"
-              />
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                Price (₹ Indian Rupee) <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">₹</span>
+                <input
+                  type="number"
+                  step="any"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="e.g. 1274"
+                  className="w-full pl-7 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white"
+                />
+              </div>
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1.5">Original Price ($) (Optional)</label>
-              <input
-                type="number"
-                step="any"
-                value={originalPrice}
-                onChange={(e) => setOriginalPrice(e.target.value)}
-                className="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white"
-              />
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                Original Price (₹ Indian Rupee) (Optional)
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">₹</span>
+                <input
+                  type="number"
+                  step="any"
+                  value={originalPrice}
+                  onChange={(e) => setOriginalPrice(e.target.value)}
+                  placeholder="e.g. 2549"
+                  className="w-full pl-7 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white"
+                />
+              </div>
             </div>
           </div>
 
