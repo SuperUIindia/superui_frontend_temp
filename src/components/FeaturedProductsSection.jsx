@@ -131,42 +131,36 @@ export default function FeaturedProductsSection() {
                 aria-label={`View ${product.name}`}
                 className="group relative rounded-3xl sm:rounded-[28px] overflow-hidden border border-[#EDEDED] hover:border-black/15 shadow-[0_4px_24px_rgba(20,20,20,0.04)] hover:shadow-[0_20px_48px_rgba(0,0,0,0.12)] transition-all duration-300 flex flex-col cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#FF5E00]"
               >
-                {/* Clean Image Showcase - 1:1 Square Ratio on all screen sizes */}
+                {/* Clean Image Showcase */}
                 <div
-                  className={`relative w-full aspect-square overflow-hidden ${
+                  className={`relative w-full aspect-[16/10] min-[568px]:aspect-[16/9] overflow-hidden ${
                     product.bgColor || 'bg-[#F9F9F9]'
                   } flex items-center justify-center`}
-                  style={{ aspectRatio: '1 / 1' }}
                 >
-                  <div
-                    className="absolute inset-0 bg-cover bg-center blur-2xl opacity-20 scale-125 pointer-events-none"
-                    style={{ backgroundImage: `url("${product.image}")` }}
-                  />
                   <img
                     src={product.image}
                     alt={product.imageAlt || product.name}
-                    className="relative z-1 max-w-full max-h-full w-auto h-auto object-contain object-center transition-transform duration-700 ease-out group-hover:scale-105 p-2"
-                    style={{ aspectRatio: '1 / 1' }}
+                    className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                     loading="lazy"
                     decoding="async"
                   />
 
                   {/* Soft bottom gradient overlay: always visible below 567px, reveals on hover on larger screens */}
-                  <div className="absolute inset-x-0 bottom-0 h-24 sm:h-28 bg-gradient-to-t from-black/60 via-black/25 to-transparent max-[567px]:opacity-100 min-[568px]:opacity-0 min-[568px]:group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <div className="absolute inset-x-0 bottom-0 h-20 min-[568px]:h-28 bg-gradient-to-t from-black/60 via-black/25 to-transparent max-[567px]:opacity-100 min-[568px]:opacity-0 min-[568px]:group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                   {/* Centered Button: always visible and centered at bottom below 567px, hover-revealed on desktop */}
-                  <div className="absolute inset-x-0 bottom-3.5 sm:bottom-6 z-20 flex items-center justify-center px-4 max-[567px]:opacity-100 max-[567px]:translate-y-0 max-[567px]:pointer-events-auto min-[568px]:opacity-0 min-[568px]:translate-y-3 min-[568px]:pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0 group-focus-within:pointer-events-auto transition-all duration-300 ease-out">
+                  <div className="absolute inset-x-0 bottom-3 min-[568px]:bottom-6 z-20 flex items-center justify-center px-4 max-[567px]:opacity-100 max-[567px]:translate-y-0 max-[567px]:pointer-events-auto min-[568px]:opacity-0 min-[568px]:translate-y-3 min-[568px]:pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0 group-focus-within:pointer-events-auto transition-all duration-300 ease-out">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleCardClick(product.href);
                       }}
-                      className="px-5 sm:px-8 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-base text-white flex items-center justify-center gap-2 sm:gap-2.5 shadow-xl hover:brightness-110 active:scale-95 transition-all duration-200 cursor-pointer backdrop-blur-sm"
+                      className="px-5 min-[568px]:px-8 py-2 min-[568px]:py-3 rounded-xl min-[568px]:rounded-2xl font-bold text-xs min-[568px]:text-base text-white flex items-center justify-center gap-2 min-[568px]:gap-2.5 shadow-xl hover:brightness-110 active:scale-95 transition-all duration-200 cursor-pointer backdrop-blur-sm"
                       style={{ backgroundColor: accent }}
                     >
                       <span>{buttonText}</span>
-                      <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 group-hover:translate-x-1" />
+                      <ArrowRight className="w-3.5 h-3.5 min-[568px]:w-4 min-[568px]:h-4 transition-transform duration-200 group-hover:translate-x-1" />
                     </button>
                   </div>
                 </div>
