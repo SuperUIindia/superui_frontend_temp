@@ -27,6 +27,7 @@ import { useToast } from './Toast';
 import { useConfirm } from './useConfirm';
 import Button from './Button';
 import { DIGITAL_PRODUCTS_DATA, EBOOKS_DATA } from '../data/productsData';
+import { updateContentInstantly } from '../lib/siteContent';
 import { PATHS } from '../routes/paths';
 
 const indent = (obj) => JSON.stringify(obj, null, 2);
@@ -122,8 +123,19 @@ export default function ProductsManager() {
     return list;
   }, [products, selectedCategory, searchQuery]);
 
-  // Save current catalog back to MongoDB
+  // Save current catalog back to MongoDB with instant 0ms optimistic update
   const saveCatalogToDb = async (catalogKey, updatedData) => {
+    const previousData = catalogs[catalogKey];
+
+    // 1. Instant 0ms local state update
+    setCatalogs((prev) => ({
+      ...prev,
+      [catalogKey]: updatedData,
+    }));
+
+    // 2. Instant 0ms global real-time broadcast to all pages and open tabs
+    updateContentInstantly(catalogKey, updatedData);
+
     setSaving(true);
     try {
       const title =
@@ -142,16 +154,17 @@ export default function ProductsManager() {
         data: updatedData,
       });
 
-      setCatalogs((prev) => ({
-        ...prev,
-        [catalogKey]: updatedData,
-      }));
-
       toast.success(
         `Saved ${catalogKey === 'digitalproducts' ? 'Digital Products' : 'E-Books'} catalog successfully!`
       );
       return true;
     } catch (err) {
+      // Revert if database save failed
+      setCatalogs((prev) => ({
+        ...prev,
+        [catalogKey]: previousData,
+      }));
+      updateContentInstantly(catalogKey, previousData);
       toast.error(err.message || 'Failed to save catalog');
       return false;
     } finally {
@@ -210,10 +223,12 @@ export default function ProductsManager() {
     }
 
     const updatedCatalog = { ...targetCatalog, products: targetProducts };
-    const success = await saveCatalogToDb(targetKey, updatedCatalog);
-    if (success) {
-      setCardModal(null);
-    }
+
+    // Instantly close modal for instant feedback
+    setCardModal(null);
+
+    // Save and broadcast instantly
+    await saveCatalogToDb(targetKey, updatedCatalog);
   };
 
   // Save raw JSON

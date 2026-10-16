@@ -318,28 +318,124 @@ const FALLBACKS = {
   }
 };
 
+const SYNC_CHANNEL_NAME = 'superui_content_sync_channel';
+const LOCAL_CACHE_KEY = 'superui_content_cache_v2';
+
+let syncChannel = null;
+try {
+  if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+    syncChannel = new BroadcastChannel(SYNC_CHANNEL_NAME);
+  }
+} catch {
+  syncChannel = null;
+}
+
+/**
+ * Instantly broadcast an update to all active components and browser tabs in 0ms.
+ */
+export function updateContentInstantly(key, data) {
+  if (!key || !data) return;
+  const k = String(key).toLowerCase();
+
+  // 1. Update localStorage cache immediately
+  try {
+    const raw = localStorage.getItem(LOCAL_CACHE_KEY);
+    const cache = raw ? JSON.parse(raw) : {};
+    cache[k] = data;
+    localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    /* ignore storage errors */
+  }
+
+  // 2. Dispatch custom event for current window
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('superui:content-instant-update', {
+        detail: { key: k, data }
+      })
+    );
+  }
+
+  // 3. Post to BroadcastChannel for all other tabs/windows
+  try {
+    if (syncChannel) {
+      syncChannel.postMessage({ key: k, data, timestamp: Date.now() });
+    }
+  } catch {
+    /* ignore channel errors */
+  }
+}
+
 const SiteContentContext = createContext({
   content: FALLBACKS,
   loading: true,
   error: null,
-  reload: () => {}
+  reload: () => {},
+  updateInstant: updateContentInstantly
 });
 
-/** Loads every section once and shares it with all consumers. */
+/** Loads every section and shares it with all consumers with instant real-time sync. */
 export function SiteContentProvider({ children }) {
-  const [content, setContent] = useState(FALLBACKS);
+  // Read initial content from localStorage cache merged with fallbacks for 0ms paint
+  const [content, setContent] = useState(() => {
+    try {
+      const raw = localStorage.getItem(LOCAL_CACHE_KEY);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        return { ...FALLBACKS, ...cached };
+      }
+    } catch {
+      /* ignore storage errors */
+    }
+    return FALLBACKS;
+  });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tick, setTick] = useState(0);
+
+  // Listen for instant updates in the current window and across other tabs
+  useEffect(() => {
+    const handleInstantUpdate = (e) => {
+      if (!e?.detail) return;
+      const { key, data } = e.detail;
+      if (key && data) {
+        setContent((prev) => ({
+          ...prev,
+          [key.toLowerCase()]: data
+        }));
+      }
+    };
+
+    const handleBroadcast = (event) => {
+      if (event?.data?.key && event.data.data) {
+        setContent((prev) => ({
+          ...prev,
+          [event.data.key.toLowerCase()]: event.data.data
+        }));
+      }
+    };
+
+    window.addEventListener('superui:content-instant-update', handleInstantUpdate);
+    if (syncChannel) {
+      syncChannel.addEventListener('message', handleBroadcast);
+    }
+
+    return () => {
+      window.removeEventListener('superui:content-instant-update', handleInstantUpdate);
+      if (syncChannel) {
+        syncChannel.removeEventListener('message', handleBroadcast);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
 
     api
-      .get('/api/content')
+      .get(`/api/content?_t=${Date.now()}`)
       .then((res) => {
         if (!active) return;
-        // GET /api/content -> { success, data: { navbar: {...}, hero: {...} } }
         const sections = res && res.data ? res.data : null;
         if (!sections || typeof sections !== 'object') return;
 
@@ -353,6 +449,13 @@ export function SiteContentProvider({ children }) {
         }
         setContent(merged);
         setError(null);
+
+        // Update local cache
+        try {
+          localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(merged));
+        } catch {
+          /* ignore */
+        }
       })
       .catch((err) => {
         if (!active) return;
@@ -369,14 +472,20 @@ export function SiteContentProvider({ children }) {
   }, [tick]);
 
   const value = useMemo(
-    () => ({ content, loading, error, reload: () => setTick((t) => t + 1) }),
+    () => ({
+      content,
+      loading,
+      error,
+      reload: () => setTick((t) => t + 1),
+      updateInstant: updateContentInstantly
+    }),
     [content, loading, error]
   );
 
   return <SiteContentContext.Provider value={value}>{children}</SiteContentContext.Provider>;
 }
 
-/** Full store: { content, loading, error, reload } */
+/** Full store: { content, loading, error, reload, updateInstant } */
 export function useSiteContent() {
   return useContext(SiteContentContext);
 }

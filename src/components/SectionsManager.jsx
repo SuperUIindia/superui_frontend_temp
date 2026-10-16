@@ -17,7 +17,7 @@ import { api } from '../lib/api';
 import { useToast } from './Toast';
 import { useConfirm } from './useConfirm';
 import Button from './Button';
-import { SECTION_KEYS } from '../lib/siteContent';
+import { SECTION_KEYS, updateContentInstantly } from '../lib/siteContent';
 
 const indent = (obj) => JSON.stringify(obj, null, 2);
 
@@ -96,6 +96,7 @@ function SectionEditor({ section, mode, onClose, onSaved }) {
       } else {
         await api.put(`/api/admin/content/${section.key}`, payload);
       }
+      updateContentInstantly(key, parsed.value);
       onSaved(key);
     } catch (err) {
       setServerError(err.message || 'Failed to save section');
