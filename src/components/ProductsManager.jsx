@@ -409,17 +409,25 @@ export default function ProductsManager() {
                     className="bg-white rounded-2xl overflow-hidden border border-[#EDEDED] shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between group"
                   >
                     <div>
-                      {/* Image & Multiple Image Indicator */}
-                      <div className="relative aspect-[16/10] w-full bg-gray-100 overflow-hidden">
+                      {/* Image & Multiple Image Indicator (1:1 Ratio Full Display) */}
+                      <div
+                        className="relative aspect-square w-full bg-[#F6F7F9] overflow-hidden flex items-center justify-center"
+                        style={{ aspectRatio: '1 / 1' }}
+                      >
+                        <div
+                          className="absolute inset-0 bg-cover bg-center blur-xl opacity-25 scale-125 pointer-events-none"
+                          style={{ backgroundImage: `url("${imgList[0]}")` }}
+                        />
                         <img
                           src={imgList[0]}
                           alt={p.title}
-                          className="w-full h-full object-cover"
+                          className="relative z-1 max-w-full max-h-full w-auto h-auto object-contain p-2"
+                          style={{ aspectRatio: '1 / 1' }}
                           loading="lazy"
                         />
 
                         {/* Multiple Images Badge */}
-                        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                        <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5">
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/70 text-white backdrop-blur-sm flex items-center gap-1">
                             <ImageIcon className="w-3 h-3" />
                             <span>{imgList.length} {imgList.length === 1 ? 'Image' : 'Images'}</span>
@@ -860,7 +868,7 @@ function ProductCardModal({ mode, product, activeCatalog, categories, onClose, o
 
                   <div className="relative flex-1">
                     <input
-                      type="url"
+                      type="text"
                       value={imgUrl}
                       onChange={(e) => handleUpdateImageUrl(index, e.target.value)}
                       placeholder={index === 0 ? 'Primary Image URL (e.g. /E_Books.png or https://...)' : `Additional Image URL #${index + 1}`}

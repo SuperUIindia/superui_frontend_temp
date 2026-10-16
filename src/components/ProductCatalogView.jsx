@@ -35,36 +35,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import ContactModal from './ContactModal';
 
-// Supported international currencies with INR (India) as default base region
-export const CURRENCIES = {
-  INR: { code: 'INR', symbol: '₹', name: 'INR (₹)', country: 'India (Default Base)', rate: 1, locale: 'en-IN' },
-  USD: { code: 'USD', symbol: '$', name: 'USD ($)', country: 'United States', rate: 1 / 86, locale: 'en-US' },
-  GBP: { code: 'GBP', symbol: '£', name: 'GBP (£)', country: 'United Kingdom', rate: 1 / 109, locale: 'en-GB' },
-  EUR: { code: 'EUR', symbol: '€', name: 'EUR (€)', country: 'European Union', rate: 1 / 93, locale: 'de-DE' },
-  CAD: { code: 'CAD', symbol: 'C$', name: 'CAD (C$)', country: 'Canada', rate: 1 / 63, locale: 'en-CA' },
-  AUD: { code: 'AUD', symbol: 'A$', name: 'AUD (A$)', country: 'Australia', rate: 1 / 56, locale: 'en-AU' },
-  AED: { code: 'AED', symbol: 'AED ', name: 'AED', country: 'United Arab Emirates', rate: 1 / 23.4, locale: 'en-AE' },
-};
-
-/**
- * Format a base INR price according to the selected currency.
- */
-export const formatPrice = (inrAmount, currencyCode = 'INR') => {
-  if (inrAmount === undefined || inrAmount === null || inrAmount === '') return '';
-  const num = Number(inrAmount);
-  if (isNaN(num)) return inrAmount;
-
-  const curr = CURRENCIES[currencyCode] || CURRENCIES.INR;
-  const converted = num * curr.rate;
-
-  if (currencyCode === 'INR') {
-    return `${curr.symbol}${Math.round(converted).toLocaleString('en-IN')}`;
-  }
-  if (currencyCode === 'AED') {
-    return `${Math.round(converted).toLocaleString()} ${curr.code.trim()}`;
-  }
-  return `${curr.symbol}${converted.toFixed(2)}`;
-};
+import { CURRENCIES, formatPrice } from '../lib/currencies';
 
 const ICON_MAP = {
   Sparkles,
@@ -773,10 +744,45 @@ export default function ProductCatalogView({
  * custom badges, currency formatting, and buy redirect links.
  */
 function ProductCardItem({ product, idx, accentColor, selectedCurrency = 'INR', onBuyClick }) {
-  const images = Array.isArray(product.images) && product.images.length > 0
-    ? product.images.slice(0, 5)
-    : [product.image];
+  // Normalize and parse images safely (supports array, comma-separated strings, or single string)
+  const validImages = useMemo(() => {
+    let rawList = [];
+    if (Array.isArray(product.images) && product.images.length > 0) {
+      rawList = product.images;
+    } else if (typeof product.images === 'string' && product.images.trim().length > 0) {
+      rawList = product.images.split(/[\n,]+/);
+    } else if (product.image && typeof product.image === 'string') {
+      rawList = product.image.split(/[\n,]+/);
+    }
+
+    const cleaned = rawList
+      .map((url) => (typeof url === 'string' ? url.trim() : ''))
+      .filter((url) => url.length > 0);
+
+    return cleaned.length > 0
+      ? cleaned.slice(0, 5)
+      : [product.image || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80'];
+  }, [product.images, product.image]);
+
   const [activeImgIndex, setActiveImgIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Auto-scroll images with smooth transition when multiple images exist (3.2 seconds interval)
+  useEffect(() => {
+    if (validImages.length <= 1) return;
+
+    if (activeImgIndex >= validImages.length) {
+      setActiveImgIndex(0);
+    }
+
+    if (isPaused) return;
+
+    const interval = setInterval(() => {
+      setActiveImgIndex((prev) => (prev + 1) % validImages.length);
+    }, 3200);
+
+    return () => clearInterval(interval);
+  }, [validImages.length, isPaused, activeImgIndex]);
 
   // Filter out Bestseller badge as requested by user; keep discount and custom promotional badges
   const badges = Array.isArray(product.badges) && product.badges.length > 0
@@ -785,6 +791,8 @@ function ProductCardItem({ product, idx, accentColor, selectedCurrency = 'INR', 
 
   const hasBuyLink =
     product.buyLink && typeof product.buyLink === 'string' && product.buyLink.trim().length > 0;
+
+  const currentImg = validImages[activeImgIndex] || validImages[0];
 
   return (
     <motion.div
@@ -795,24 +803,52 @@ function ProductCardItem({ product, idx, accentColor, selectedCurrency = 'INR', 
       className="group bg-white rounded-2xl overflow-hidden border border-[#E8E8E8] shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] hover:border-[#D0D0D0] transition-all duration-300 flex flex-col justify-between"
     >
       <div>
-        {/* Product Image with Hover Scale */}
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#F4F4F4]">
-          <img
-            src={images[activeImgIndex] || images[0] || product.image}
-            alt={product.title}
-            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
-            loading="lazy"
+        {/* Product Image Area - Strict 1:1 Aspect Ratio on All Screen Sizes with Full Image Display */}
+        <div
+          className="relative aspect-square w-full overflow-hidden bg-[#F6F7F9] flex items-center justify-center select-none"
+          style={{ aspectRatio: '1 / 1' }}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          {/* Ambient blurred backdrop using current image for seamless border integration */}
+          <div
+            className="absolute inset-0 bg-cover bg-center blur-2xl opacity-25 scale-125 transition-all duration-700 pointer-events-none"
+            style={{ backgroundImage: `url("${currentImg}")` }}
           />
 
+          {/* Animated Main Image - Full Image Display with Zero Cropping (object-contain) */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`img-${activeImgIndex}-${currentImg}`}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.04 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-0 flex items-center justify-center p-2 z-1"
+            >
+              <img
+                src={currentImg}
+                alt={`${product.title} - ${activeImgIndex + 1}`}
+                className="max-w-full max-h-full w-auto h-auto object-contain select-none drop-shadow-sm transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                loading="lazy"
+                decoding="async"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80';
+                }}
+              />
+            </motion.div>
+          </AnimatePresence>
+
           {/* Top Category Badge */}
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10 pointer-events-none">
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-20 pointer-events-none">
             <span className="px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase bg-white/95 text-[#111111] shadow-sm backdrop-blur-sm border border-black/5">
               {product.categoryName || product.category}
             </span>
           </div>
 
           {/* Badges top right (Bestseller removed per user request) */}
-          <div className="absolute top-3 right-3 flex flex-wrap gap-1 z-10">
+          <div className="absolute top-2.5 right-2.5 flex flex-wrap gap-1 z-20 pointer-events-none">
             {badges.map((b) => (
               <span
                 key={b}
@@ -824,10 +860,38 @@ function ProductCardItem({ product, idx, accentColor, selectedCurrency = 'INR', 
             ))}
           </div>
 
+          {/* Multiple Images Navigation Controls (Prev / Next Arrows on Hover) */}
+          {validImages.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveImgIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
+                }}
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/50 hover:bg-black/85 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 backdrop-blur-sm cursor-pointer shadow-md"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveImgIndex((prev) => (prev + 1) % validImages.length);
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/50 hover:bg-black/85 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 backdrop-blur-sm cursor-pointer shadow-md"
+                aria-label="Next image"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </>
+          )}
+
           {/* Multiple Images Dots indicator (up to 5 images) */}
-          {images.length > 1 && (
-            <div className="absolute bottom-2.5 right-3 z-10 flex items-center gap-1.5 bg-black/60 px-2.5 py-1 rounded-full backdrop-blur-sm">
-              {images.map((_, i) => (
+          {validImages.length > 1 && (
+            <div className="absolute bottom-2.5 right-3 z-20 flex items-center gap-1.5 bg-black/60 px-2.5 py-1 rounded-full backdrop-blur-md shadow-sm">
+              {validImages.map((_, i) => (
                 <button
                   key={i}
                   type="button"
@@ -835,8 +899,8 @@ function ProductCardItem({ product, idx, accentColor, selectedCurrency = 'INR', 
                     e.stopPropagation();
                     setActiveImgIndex(i);
                   }}
-                  className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
-                    i === activeImgIndex ? 'w-4 bg-white' : 'bg-white/50 hover:bg-white/80'
+                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                    i === activeImgIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/80'
                   }`}
                   aria-label={`Show image ${i + 1}`}
                 />
@@ -846,7 +910,7 @@ function ProductCardItem({ product, idx, accentColor, selectedCurrency = 'INR', 
 
           {/* Format pill at bottom */}
           {product.format && (
-            <div className="absolute bottom-2.5 left-3 pointer-events-none">
+            <div className="absolute bottom-2.5 left-3 z-20 pointer-events-none">
               <span className="px-2.5 py-0.5 rounded-md text-[10px] font-semibold bg-black/60 text-white backdrop-blur-md">
                 {product.format}
               </span>

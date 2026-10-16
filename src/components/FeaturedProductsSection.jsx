@@ -131,16 +131,22 @@ export default function FeaturedProductsSection() {
                 aria-label={`View ${product.name}`}
                 className="group relative rounded-3xl sm:rounded-[28px] overflow-hidden border border-[#EDEDED] hover:border-black/15 shadow-[0_4px_24px_rgba(20,20,20,0.04)] hover:shadow-[0_20px_48px_rgba(0,0,0,0.12)] transition-all duration-300 flex flex-col cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#FF5E00]"
               >
-                {/* Clean Image Showcase - Full visibility, no white bottom in normal time */}
+                {/* Clean Image Showcase - 1:1 Square Ratio on all screen sizes */}
                 <div
-                  className={`relative w-full aspect-[16/8] sm:aspect-[16/8] overflow-hidden ${
+                  className={`relative w-full aspect-square overflow-hidden ${
                     product.bgColor || 'bg-[#F9F9F9]'
                   } flex items-center justify-center`}
+                  style={{ aspectRatio: '1 / 1' }}
                 >
+                  <div
+                    className="absolute inset-0 bg-cover bg-center blur-2xl opacity-20 scale-125 pointer-events-none"
+                    style={{ backgroundImage: `url("${product.image}")` }}
+                  />
                   <img
                     src={product.image}
                     alt={product.imageAlt || product.name}
-                    className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                    className="relative z-1 max-w-full max-h-full w-auto h-auto object-contain object-center transition-transform duration-700 ease-out group-hover:scale-105 p-2"
+                    style={{ aspectRatio: '1 / 1' }}
                     loading="lazy"
                     decoding="async"
                   />
