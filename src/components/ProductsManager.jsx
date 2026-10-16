@@ -20,7 +20,35 @@ import {
   RefreshCw,
   Eye,
   SlidersHorizontal,
-  Star
+  Star,
+  Folder,
+  Palette,
+  Music,
+  Video,
+  Award,
+  Compass,
+  Gift,
+  Smile,
+  Shield,
+  Headphones,
+  FileText,
+  Camera,
+  Briefcase,
+  Cpu,
+  Flame,
+  Bookmark,
+  Package,
+  Box,
+  Lightbulb,
+  Heart,
+  Activity,
+  Code,
+  TrendingUp,
+  Coffee,
+  Smartphone,
+  Layout,
+  Zap,
+  Sparkles
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { useToast } from './Toast';
@@ -33,6 +61,36 @@ import { PATHS } from '../routes/paths';
 const indent = (obj) => JSON.stringify(obj, null, 2);
 
 const PRESET_BADGES = ['50% OFF', 'HOT DEAL', 'NEW RELEASE', 'FEATURED', 'LIMITED'];
+
+export const AVAILABLE_ICONS = [
+  { id: 'Sparkles', label: 'Sparkles', Icon: Sparkles },
+  { id: 'BookOpen', label: 'Book', Icon: BookOpen },
+  { id: 'Layers', label: 'Layers', Icon: Layers },
+  { id: 'Globe', label: 'Globe', Icon: Globe },
+  { id: 'Smartphone', label: 'Mobile', Icon: Smartphone },
+  { id: 'Layout', label: 'Layout', Icon: Layout },
+  { id: 'Heart', label: 'Heart', Icon: Heart },
+  { id: 'Activity', label: 'Activity', Icon: Activity },
+  { id: 'Code', label: 'Code', Icon: Code },
+  { id: 'TrendingUp', label: 'Growth', Icon: TrendingUp },
+  { id: 'Coffee', label: 'Coffee', Icon: Coffee },
+  { id: 'Tag', label: 'Tag', Icon: Tag },
+  { id: 'Zap', label: 'Zap', Icon: Zap },
+  { id: 'Star', label: 'Star', Icon: Star },
+  { id: 'Palette', label: 'Palette', Icon: Palette },
+  { id: 'Music', label: 'Music', Icon: Music },
+  { id: 'Video', label: 'Video', Icon: Video },
+  { id: 'Award', label: 'Award', Icon: Award },
+  { id: 'Shield', label: 'Shield', Icon: Shield },
+  { id: 'Flame', label: 'Flame', Icon: Flame },
+  { id: 'Package', label: 'Package', Icon: Package },
+  { id: 'Cpu', label: 'Tech/CPU', Icon: Cpu },
+  { id: 'Briefcase', label: 'Business', Icon: Briefcase },
+  { id: 'FileText', label: 'Doc', Icon: FileText },
+  { id: 'Lightbulb', label: 'Idea', Icon: Lightbulb },
+  { id: 'Gift', label: 'Gift', Icon: Gift },
+  { id: 'Folder', label: 'Folder', Icon: Folder },
+];
 
 export default function ProductsManager() {
   const toast = useToast();
@@ -53,6 +111,9 @@ export default function ProductsManager() {
 
   // Card modal: null | { mode: 'create' | 'edit', product: object | null }
   const [cardModal, setCardModal] = useState(null);
+
+  // Category modal: null | { mode: 'create' | 'edit', category: object | null, catalogKey?: string }
+  const [categoryModal, setCategoryModal] = useState(null);
 
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState('');
@@ -187,6 +248,114 @@ export default function ProductsManager() {
     await saveCatalogToDb(activeCatalog, updatedCatalog);
   };
 
+  // Save or Update Category
+  const handleSaveCategory = async (formValues) => {
+    const targetKey = formValues.catalogKey || activeCatalog;
+    const targetCatalog = catalogs[targetKey] || {};
+    let targetCategories = [...(targetCatalog.categories || [])];
+    let targetProducts = [...(targetCatalog.products || [])];
+    const isEdit = categoryModal?.mode === 'edit';
+    const oldId = categoryModal?.category?.id;
+
+    const cleanId = formValues.id.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+    const cleanName = formValues.name.trim();
+
+    const newCategory = {
+      id: cleanId,
+      name: cleanName,
+      icon: formValues.icon || 'Sparkles',
+      count: formValues.count ?? 0,
+    };
+
+    if (isEdit) {
+      targetCategories = targetCategories.map((c) => (c.id === oldId ? { ...c, ...newCategory } : c));
+
+      // If category id changed, update matching products as well
+      if (oldId && oldId !== cleanId) {
+        targetProducts = targetProducts.map((p) =>
+          p.category === oldId
+            ? { ...p, category: cleanId, categoryName: cleanName }
+            : p
+        );
+      } else {
+        targetProducts = targetProducts.map((p) =>
+          p.category === cleanId ? { ...p, categoryName: cleanName } : p
+        );
+      }
+    } else {
+      if (targetCategories.some((c) => c.id === cleanId)) {
+        toast.error(`Category with ID "${cleanId}" already exists in this catalog.`);
+        return false;
+      }
+      targetCategories.push(newCategory);
+    }
+
+    const updatedCatalog = {
+      ...targetCatalog,
+      categories: targetCategories,
+      products: targetProducts,
+    };
+
+    setCategoryModal(null);
+    await saveCatalogToDb(targetKey, updatedCatalog);
+    toast.success(
+      `Category "${cleanName}" ${isEdit ? 'updated' : 'created'} successfully!`
+    );
+    return true;
+  };
+
+  // Delete Category
+  const handleDeleteCategory = async (catToDelete, catalogKey) => {
+    if (catToDelete.id === 'all') {
+      toast.error('The default "All" category cannot be deleted.');
+      return;
+    }
+
+    const confirmed = await confirm({
+      title: `Delete Category "${catToDelete.name}"?`,
+      message: `Are you sure you want to delete the category "${catToDelete.name}"? Any products assigned to this category will be safely reassigned to the default category.`,
+      confirmText: 'Delete Category',
+      confirmVariant: 'danger',
+    });
+
+    if (!confirmed) return;
+
+    const targetKey = catalogKey || activeCatalog;
+    const targetCatalog = catalogs[targetKey] || {};
+    const remainingCategories = (targetCatalog.categories || []).filter(
+      (c) => c.id !== catToDelete.id
+    );
+
+    const fallbackCategory = remainingCategories.find((c) => c.id !== 'all') || {
+      id: 'all',
+      name: 'All',
+    };
+
+    const updatedProducts = (targetCatalog.products || []).map((p) => {
+      if (p.category === catToDelete.id) {
+        return {
+          ...p,
+          category: fallbackCategory.id,
+          categoryName: fallbackCategory.name,
+        };
+      }
+      return p;
+    });
+
+    const updatedCatalog = {
+      ...targetCatalog,
+      categories: remainingCategories,
+      products: updatedProducts,
+    };
+
+    if (selectedCategory === catToDelete.id) {
+      setSelectedCategory('all');
+    }
+
+    await saveCatalogToDb(targetKey, updatedCatalog);
+    toast.success(`Category "${catToDelete.name}" deleted.`);
+  };
+
   // Save or Update Product Card from Form
   const handleSaveProductCard = async (formValues) => {
     const isEdit = cardModal?.mode === 'edit';
@@ -288,6 +457,22 @@ export default function ProductsManager() {
               <span>{viewMode === 'cards' ? 'Edit Raw JSON' : 'View Cards Grid'}</span>
             </button>
 
+            {/* Add Category Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              icon={Tag}
+              onClick={() =>
+                setCategoryModal({
+                  mode: 'create',
+                  category: null,
+                  catalogKey: activeCatalog,
+                })
+              }
+            >
+              Add Category
+            </Button>
+
             {/* Create Product Card Button */}
             <Button
               variant="primary"
@@ -339,6 +524,125 @@ export default function ProductsManager() {
               {catalogs.ebooks?.products?.length || 0}
             </span>
           </button>
+        </div>
+      </div>
+
+      {/* CATEGORIES MANAGEMENT SECTION (Create, Edit, Update, Delete for both books & digital products) */}
+      <div className="bg-white rounded-2xl p-5 border border-[#EDEDED] shadow-[0_4px_20px_rgba(0,0,0,0.02)] space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-xs"
+              style={{ backgroundColor: activeCatalog === 'ebooks' ? '#7C3AED' : '#FF5E00' }}
+            >
+              <Tag className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm sm:text-base font-black text-[#111111]">
+                  {activeCatalog === 'digitalproducts' ? 'Digital Products & UI Kits' : 'All Types of E-Books'} Categories
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-700">
+                  {categories.length} Categories
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-500">
+                Click any category to edit its display name or icon, or click "+ Add New Category" to create new filters.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            icon={Plus}
+            onClick={() =>
+              setCategoryModal({
+                mode: 'create',
+                category: null,
+                catalogKey: activeCatalog,
+              })
+            }
+          >
+            Add New Category
+          </Button>
+        </div>
+
+        {/* Category Chips Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+          {categories.map((cat) => {
+            const IconObj =
+              AVAILABLE_ICONS.find((i) => i.id === cat.icon)?.Icon || Sparkles;
+            const productCount =
+              cat.id === 'all'
+                ? products.length
+                : products.filter((p) => p.category === cat.id).length;
+            const isAll = cat.id === 'all';
+
+            return (
+              <div
+                key={cat.id}
+                className="group relative flex items-center justify-between p-2.5 rounded-xl border border-gray-200 bg-gray-50/60 hover:bg-white hover:border-[#FF5E00]/40 hover:shadow-xs transition-all"
+              >
+                <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                  <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-white shadow-xs"
+                    style={{
+                      backgroundColor:
+                        activeCatalog === 'ebooks' ? '#7C3AED' : '#FF5E00',
+                    }}
+                  >
+                    <IconObj className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-gray-900 truncate">
+                        {cat.name}
+                      </span>
+                      {isAll && (
+                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-gray-200 text-gray-600 font-bold uppercase">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                      <span className="font-mono truncate">id: {cat.id}</span>
+                      <span>•</span>
+                      <span className="font-semibold text-gray-600">{productCount} items</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCategoryModal({
+                        mode: 'edit',
+                        category: cat,
+                        catalogKey: activeCatalog,
+                      })
+                    }
+                    className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                    title="Edit Category"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  {!isAll && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteCategory(cat, activeCatalog)}
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                      title="Delete Category"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -608,6 +912,19 @@ export default function ProductsManager() {
         </div>
       )}
 
+      {/* CREATE & EDIT CATEGORY MODAL */}
+      <AnimatePresence>
+        {categoryModal && (
+          <CategoryModal
+            mode={categoryModal.mode}
+            category={categoryModal.category}
+            activeCatalog={categoryModal.catalogKey || activeCatalog}
+            onClose={() => setCategoryModal(null)}
+            onSave={handleSaveCategory}
+          />
+        )}
+      </AnimatePresence>
+
       {/* CREATE & EDIT PRODUCT CARD MODAL */}
       <AnimatePresence>
         {cardModal && (
@@ -618,6 +935,9 @@ export default function ProductsManager() {
             categories={categories}
             onClose={() => setCardModal(null)}
             onSave={handleSaveProductCard}
+            onOpenCategoryModal={(catalogKey) =>
+              setCategoryModal({ mode: 'create', category: null, catalogKey })
+            }
           />
         )}
       </AnimatePresence>
@@ -636,7 +956,15 @@ export default function ProductsManager() {
  * - badges
  * - buyLink: link to redirect when buy button is clicked
  */
-function ProductCardModal({ mode, product, activeCatalog, categories, onClose, onSave }) {
+function ProductCardModal({
+  mode,
+  product,
+  activeCatalog,
+  categories,
+  onClose,
+  onSave,
+  onOpenCategoryModal,
+}) {
   const isEdit = mode === 'edit';
 
   const [catalogKey, setCatalogKey] = useState(activeCatalog);
@@ -786,9 +1114,21 @@ function ProductCardModal({ mode, product, activeCatalog, categories, onClose, o
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                Category <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-gray-700">
+                  Category <span className="text-red-500">*</span>
+                </label>
+                {onOpenCategoryModal && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenCategoryModal(catalogKey)}
+                    className="text-[11px] font-bold text-[#FF5E00] hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>New Category</span>
+                  </button>
+                )}
+              </div>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -796,7 +1136,7 @@ function ProductCardModal({ mode, product, activeCatalog, categories, onClose, o
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name}
+                    {c.name} {c.id === 'all' ? '(Default All)' : ''}
                   </option>
                 ))}
               </select>
@@ -1030,6 +1370,235 @@ function ProductCardModal({ mode, product, activeCatalog, categories, onClose, o
             </Button>
             <Button type="submit" variant="primary" size="md" icon={Check}>
               {isEdit ? 'Save Changes' : 'Create Product Card'}
+            </Button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+}
+
+/**
+ * Dedicated Category Creation & Edit Modal
+ * Form fields:
+ * - catalogKey: digitalproducts | ebooks
+ * - name: Display Name
+ * - id: Slug ID
+ * - icon: Lucide Icon identifier
+ */
+function CategoryModal({ mode, category, activeCatalog, onClose, onSave }) {
+  const isEdit = mode === 'edit';
+  const [catalogKey, setCatalogKey] = useState(activeCatalog);
+  const [name, setName] = useState(category?.name || '');
+  const [id, setId] = useState(category?.id || '');
+  const [icon, setIcon] = useState(category?.icon || 'Sparkles');
+  const [idManual, setIdManual] = useState(isEdit);
+  const [formError, setFormError] = useState('');
+
+  // Auto-slugify name to ID when typing name in create mode
+  const handleNameChange = (val) => {
+    setName(val);
+    if (!idManual && !isEdit) {
+      const slug = val
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      setId(slug);
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setFormError('Category name is required.');
+      return;
+    }
+    const cleanId = id.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+    if (!cleanId) {
+      setFormError('Category ID / Slug is required.');
+      return;
+    }
+    if (!isEdit && cleanId === 'all') {
+      setFormError('"all" is a reserved system ID. Please choose another ID.');
+      return;
+    }
+
+    setFormError('');
+    onSave({
+      catalogKey,
+      name: name.trim(),
+      id: cleanId,
+      icon,
+      count: category?.count ?? 0,
+    });
+  };
+
+  const SelectedIconComp =
+    AVAILABLE_ICONS.find((item) => item.id === icon)?.Icon || Sparkles;
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 overflow-y-auto">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 14 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 14 }}
+        className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-[#EDEDED] z-10 overflow-hidden my-auto"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#EDEDED] bg-gray-50/50">
+          <div>
+            <h2 className="text-base sm:text-lg font-black text-[#111111]">
+              {isEdit ? 'Edit Category' : 'Create New Category'}
+            </h2>
+            <p className="text-xs text-gray-500">
+              Configure category name, slug ID, and icon for navigation filters.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full text-gray-400 hover:text-black hover:bg-gray-100 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+          {formError && (
+            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
+
+          {/* Target Catalog */}
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">
+              Target Catalog <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={catalogKey}
+              onChange={(e) => setCatalogKey(e.target.value)}
+              disabled={isEdit}
+              className="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white"
+            >
+              <option value="digitalproducts">Digital Products &amp; UI Kits</option>
+              <option value="ebooks">All Types of E-Books</option>
+            </select>
+          </div>
+
+          {/* Category Display Name */}
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">
+              Category Display Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => handleNameChange(e.target.value)}
+              placeholder="e.g. AI Prompts & Automations"
+              className="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#FF5E00]/20"
+            />
+          </div>
+
+          {/* Category ID / Slug */}
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">
+              Category ID / Slug <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={id}
+              onChange={(e) => {
+                setId(e.target.value);
+                setIdManual(true);
+              }}
+              disabled={isEdit && category?.id === 'all'}
+              placeholder="e.g. ai-prompts"
+              className="w-full px-3 py-2 text-xs font-mono bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#FF5E00]/20"
+            />
+            <p className="text-[10px] text-gray-400 mt-1">
+              Used in code and URL filters (lowercase letters, numbers, and hyphens).
+            </p>
+          </div>
+
+          {/* Icon Selector with Visual Grid */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold text-gray-700">
+                Category Icon <span className="text-red-500">*</span>
+              </label>
+              <span className="text-[11px] font-semibold text-gray-500 flex items-center gap-1.5">
+                Selected:
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 font-bold text-gray-800">
+                  <SelectedIconComp className="w-3.5 h-3.5 text-[#FF5E00]" />
+                  {icon}
+                </span>
+              </span>
+            </div>
+
+            <div className="grid grid-cols-5 sm:grid-cols-7 gap-2 max-h-48 overflow-y-auto p-2.5 bg-gray-50 rounded-2xl border border-gray-200">
+              {AVAILABLE_ICONS.map((item) => {
+                const ItemIcon = item.Icon;
+                const isSelected = icon === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setIcon(item.id)}
+                    className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all cursor-pointer border ${
+                      isSelected
+                        ? 'bg-white text-[#FF5E00] border-[#FF5E00] shadow-sm ring-2 ring-[#FF5E00]/20 font-bold'
+                        : 'bg-white/60 text-gray-600 border-gray-200/60 hover:bg-white hover:text-black'
+                    }`}
+                    title={item.label}
+                  >
+                    <ItemIcon className="w-4 h-4 mb-1" />
+                    <span className="text-[9px] truncate w-full text-center">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Live Preview Pill */}
+          <div className="pt-2 border-t border-gray-100">
+            <span className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+              Live Category Pill Preview:
+            </span>
+            <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center gap-3">
+              <div
+                className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs text-white shadow-sm"
+                style={{
+                  backgroundColor: catalogKey === 'ebooks' ? '#7C3AED' : '#FF5E00',
+                }}
+              >
+                <SelectedIconComp className="w-4 h-4" />
+                <span>{name || 'Category Name'}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20">
+                  {category?.count ?? 0}
+                </span>
+              </div>
+              <span className="text-xs text-gray-400">
+                Will be displayed on {catalogKey === 'ebooks' ? '/ebooks-digital' : '/digital-products'}
+              </span>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-xs font-semibold text-gray-600 hover:text-black hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <Button variant="primary" size="sm" type="submit">
+              {isEdit ? 'Update Category' : 'Create Category'}
             </Button>
           </div>
         </form>
